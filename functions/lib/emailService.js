@@ -1,7 +1,9 @@
 "use strict";
 'use server';
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendNewContactEmailToAdmin = exports.sendStatusUpdateEmail = exports.sendNewOrderEmails = void 0;
+exports.sendNewOrderEmails = sendNewOrderEmails;
+exports.sendStatusUpdateEmail = sendStatusUpdateEmail;
+exports.sendNewContactEmailToAdmin = sendNewContactEmailToAdmin;
 const logger = require("firebase-functions/logger");
 const params_1 = require("firebase-functions/params");
 const Brevo = require('sib-api-v3-sdk');
@@ -80,7 +82,6 @@ async function sendNewOrderEmails(order) {
     };
     await sendEmail(adminMail);
 }
-exports.sendNewOrderEmails = sendNewOrderEmails;
 async function sendStatusUpdateEmail(update) {
     const { orderId, customerEmail, status } = update;
     let subject = '';
@@ -105,12 +106,11 @@ async function sendStatusUpdateEmail(update) {
     const mail = {
         to: customerEmail,
         subject: subject,
-        text: htmlBody.replace(/<[^>]+>/g, ''),
+        text: htmlBody.replace(/<[^>]+>/g, ''), // Simple text version
         html: `<h2>Order Update</h2><p>The status of your order #${orderId.substring(0, 7)} has been updated to: <strong>${status}</strong>.</p>${htmlBody}<p>Thanks,<br>The bread mate Team</p>`,
     };
     await sendEmail(mail);
 }
-exports.sendStatusUpdateEmail = sendStatusUpdateEmail;
 async function sendNewContactEmailToAdmin(contact) {
     const adminMail = {
         to: adminEmail.value(),
@@ -132,5 +132,4 @@ async function sendNewContactEmailToAdmin(contact) {
     };
     await sendEmail(adminMail);
 }
-exports.sendNewContactEmailToAdmin = sendNewContactEmailToAdmin;
 //# sourceMappingURL=emailService.js.map

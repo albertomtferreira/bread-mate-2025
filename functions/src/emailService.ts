@@ -15,6 +15,12 @@ interface OrderData {
   customerEmail: string;
   items: { name: string; quantity: number; price: number }[];
   total: number;
+  deliveryAddress: {
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    postcode: string;
+  };
 }
 
 interface StatusUpdateData {
