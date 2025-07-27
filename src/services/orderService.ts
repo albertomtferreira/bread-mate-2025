@@ -44,7 +44,6 @@ const updateOrderStatusFunction = getCloudFunction('updateOrderStatus');
 
 export const createOrder = async (payload: OrderPayload): Promise<string | null> => {
     try {
-        console.log('DEBUG (orderService): Received payload for createOrder:', JSON.stringify(payload, null, 2));
         if (!payload.items || payload.items.length === 0) {
             throw new Error('Order must contain at least one item');
         }
@@ -56,7 +55,6 @@ export const createOrder = async (payload: OrderPayload): Promise<string | null>
         const result: any = await createOrderFunction(payload);
         
         const orderId = result?.data?.orderId;
-        console.log('DEBUG (orderService): Cloud function returned orderId:', orderId);
         
         if (orderId) {
             return orderId;

@@ -57,7 +57,7 @@ export const handleContactForm = onCall(async (request) => {
 export const createOrder = onCall(async (request) => {
   try {
     logger.info(
-      `DEBUG (functions): Order payload received for user ${request.auth?.uid || 'guest'}:`,
+      `Order payload received for user ${request.auth?.uid || 'guest'}:`,
       JSON.stringify(request.data, null, 2)
     );
 
@@ -86,7 +86,6 @@ export const createOrder = onCall(async (request) => {
         city: deliveryCity || city,
         postcode: deliveryPostcode || postcode,
     };
-    logger.info('DEBUG (functions): Final delivery address:', JSON.stringify(deliveryAddress, null, 2));
 
 
     // Add server-side fields
@@ -97,9 +96,6 @@ export const createOrder = onCall(async (request) => {
       createdAt: FieldValue.serverTimestamp(),
       userId: request.auth?.uid || null,
     };
-    logger.info('DEBUG (functions): Final orderData to be saved:', JSON.stringify(orderData, null, 2));
-
-    logger.info('Preparing to write order data to Firestore');
 
     // Write to Firestore and return the ID
     const firestore = getFirestore();
@@ -130,8 +126,6 @@ export const createOrder = onCall(async (request) => {
       status: 'success',
       message: 'Order created successfully'
     };
-    
-    logger.info('Returning response:', JSON.stringify(response));
     
     return response;
     

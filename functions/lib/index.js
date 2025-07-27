@@ -58,9 +58,8 @@ exports.handleContactForm = (0, https_1.onCall)(async (request) => {
 exports.createOrder = (0, https_1.onCall)(async (request) => {
     var _a, _b;
     try {
-        logger.info(`Order payload received for user ${((_a = request.auth) === null || _a === void 0 ? void 0 : _a.uid) || 'guest'}:`, JSON.stringify(request.data, null, 2));
-        const _c = request.data, { subscribeToNewsletter } = _c, orderPayload = __rest(_c, ["subscribeToNewsletter"]);
-        console.log("subscribeToNewsletter:", subscribeToNewsletter);
+        logger.info(`DEBUG (functions): Order payload received for user ${((_a = request.auth) === null || _a === void 0 ? void 0 : _a.uid) || 'guest'}:`, JSON.stringify(request.data, null, 2));
+        const _c = request.data, { subscribeToNewsletter, addressLine1, addressLine2, city, postcode, deliveryAddressLine1, deliveryAddressLine2, deliveryCity, deliveryPostcode } = _c, orderPayload = __rest(_c, ["subscribeToNewsletter", "addressLine1", "addressLine2", "city", "postcode", "deliveryAddressLine1", "deliveryAddressLine2", "deliveryCity", "deliveryPostcode"]);
         // Validate the payload
         if (!orderPayload) {
             logger.error('No payload received');
@@ -70,8 +69,17 @@ exports.createOrder = (0, https_1.onCall)(async (request) => {
             logger.error('Invalid items array:', orderPayload.items);
             throw new Error('The function must be called with valid order data, including items.');
         }
+        // Determine the delivery address
+        const deliveryAddress = orderPayload.deliveryAddress || {
+            addressLine1: deliveryAddressLine1 || addressLine1,
+            addressLine2: deliveryAddressLine2 || addressLine2,
+            city: deliveryCity || city,
+            postcode: deliveryPostcode || postcode,
+        };
+        logger.info('DEBUG (functions): Final delivery address:', JSON.stringify(deliveryAddress, null, 2));
         // Add server-side fields
-        const orderData = Object.assign(Object.assign({}, orderPayload), { status: 'Processing', createdAt: firestore_1.FieldValue.serverTimestamp(), userId: ((_b = request.auth) === null || _b === void 0 ? void 0 : _b.uid) || null });
+        const orderData = Object.assign(Object.assign({}, orderPayload), { deliveryAddress, status: 'Processing', createdAt: firestore_1.FieldValue.serverTimestamp(), userId: ((_b = request.auth) === null || _b === void 0 ? void 0 : _b.uid) || null });
+        logger.info('DEBUG (functions): Final orderData to be saved:', JSON.stringify(orderData, null, 2));
         logger.info('Preparing to write order data to Firestore');
         // Write to Firestore and return the ID
         const firestore = (0, firestore_1.getFirestore)();
@@ -82,14 +90,13 @@ exports.createOrder = (0, https_1.onCall)(async (request) => {
         if (subscribeToNewsletter && orderPayload.customerEmail) {
             logger.info(`Adding ${orderPayload.customerEmail} to the newsletter list.`);
             const newsletterRef = firestore.collection('newsletter').doc(orderPayload.customerEmail);
-            console.log("newsletterRef:", newsletterRef);
             await newsletterRef.set({
                 email: orderPayload.customerEmail,
                 subscribedAt: firestore_1.FieldValue.serverTimestamp()
             }, { merge: true }); // Use merge to avoid overwriting if they are already subscribed
         }
         // Send emails after successful order creation
-        await (0, emailService_1.sendNewOrderEmails)(Object.assign({ orderId }, orderPayload));
+        await (0, emailService_1.sendNewOrderEmails)(Object.assign(Object.assign({ orderId }, orderPayload), { deliveryAddress }));
         const response = {
             orderId: orderId,
             status: 'success',
@@ -108,56 +115,6 @@ exports.createOrder = (0, https_1.onCall)(async (request) => {
         }
     }
 });
-// export const createOrder = onCall(async (request) => {
-//   try {
-//     logger.info(
-//       `Order payload received for user ${request.auth?.uid || 'guest'}:`,
-//       JSON.stringify(request.data, null, 2)
-//     );
-//     const orderPayload = request.data;
-//     // Validate the payload
-//     if (!orderPayload) {
-//       logger.error('No payload received');
-//       throw new Error('Order data is required');
-//     }
-//     if (!orderPayload.items || !Array.isArray(orderPayload.items) || orderPayload.items.length === 0) {
-//       logger.error('Invalid items array:', orderPayload.items);
-//       throw new Error('The function must be called with valid order data, including items.');
-//     }
-//     // Add server-side fields
-//     const orderData = {
-//       ...orderPayload,
-//       status: 'Processing',
-//       createdAt: FieldValue.serverTimestamp(),
-//       userId: request.auth?.uid || null,
-//     };
-//     logger.info('Preparing to write order data to Firestore');
-//     // Write to Firestore and return the ID
-//     const firestore = getFirestore();
-//     const docRef = await firestore.collection('orders').add(orderData);
-//     const orderId = docRef.id;
-//     logger.info(`Successfully created order ${orderId} for ${orderPayload.customerEmail}`);
-//     // Send emails after successful order creation
-//     await sendNewOrderEmails({
-//         orderId,
-//         ...orderPayload
-//     });
-//     const response = {
-//       orderId: orderId,
-//       status: 'success',
-//       message: 'Order created successfully'
-//     };
-//     logger.info('Returning response:', JSON.stringify(response));
-//     return response;
-//   } catch (error) {
-//     logger.error('Error in createOrder function:', error);
-//     if (error instanceof Error) {
-//       throw error;
-//     } else {
-//       throw new Error('An unexpected error occurred while creating the order.');
-//     }
-//   }
-// });
 exports.updateOrderStatus = (0, https_1.onCall)(async (request) => {
     var _a;
     const firestore = (0, firestore_1.getFirestore)();

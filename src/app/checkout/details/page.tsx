@@ -97,10 +97,20 @@ export default function CheckoutDetailsPage() {
   const [selectedAddress, setSelectedAddress] = useState<'billing' | 'delivery'>('delivery');
   const router = useRouter();
   const { toast } = useToast();
+  const [completedOrderId, setCompletedOrderId] = useState<string | null>(null);
 
   const deliveryFee = cartItems.length > 0 ? 2.0 : 0;
   const subtotal = getCartTotal();
   const total = subtotal + deliveryFee;
+  
+  // Effect to navigate when an order ID is set
+  useEffect(() => {
+    if (completedOrderId) {
+      clearCart();
+      router.push(`/order/success/${completedOrderId}`);
+    }
+  }, [completedOrderId, router, clearCart]);
+
 
   const guestForm = useForm<z.infer<typeof guestCheckoutSchema>>({
     resolver: zodResolver(guestCheckoutSchema),
@@ -161,7 +171,6 @@ export default function CheckoutDetailsPage() {
   const useDifferentDeliveryAddress = guestForm.watch('useDifferentDeliveryAddress');
   
   const handlePaymentConfirmation = async (): Promise<void> => {
-    console.log('DEBUG: handlePaymentConfirmation called');
     let orderPayload;
     
     if (user) {
@@ -217,29 +226,18 @@ export default function CheckoutDetailsPage() {
     }
 
     try {
-        console.log('DEBUG: Creating order with payload:', JSON.stringify(orderPayload, null, 2));
         const newOrderId = await createOrder(orderPayload);
-        console.log('DEBUG: Order created with ID:', newOrderId);
         
         if (newOrderId) {
             toast({
                 title: "Order Placed!",
                 description: "Your order has been successfully processed."
             });
-            console.log('DEBUG: Clearing cart...');
-            clearCart();
-            console.log('DEBUG: Cart cleared. Navigating to success page...');
-            try {
-                router.push(`/order/success/${newOrderId}`);
-                console.log('DEBUG: router.push command issued successfully.');
-            } catch (e) {
-                console.error('DEBUG: Error during router.push:', e);
-            }
+            setCompletedOrderId(newOrderId); // Set the order ID to trigger navigation
         } else {
             throw new Error('Order creation failed to return an ID.');
         }
     } catch (error) {
-        console.error('DEBUG: Error during payment confirmation:', error);
         toast({
             variant: 'destructive',
             title: 'Order Failed',
