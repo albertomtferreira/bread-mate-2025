@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { UserDetailsForm } from '@/app/signup/details/page';
@@ -30,6 +29,7 @@ import { PayPalDialog } from '@/components/PayPalDialog';
 import { createOrder } from '@/services/orderService';
 import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import { OrderSuccessDialog } from '@/components/OrderSuccessDialog';
 
 
 type UserDetails = UserDetailsForm & {
@@ -102,15 +102,6 @@ export default function CheckoutDetailsPage() {
   const deliveryFee = cartItems.length > 0 ? 2.0 : 0;
   const subtotal = getCartTotal();
   const total = subtotal + deliveryFee;
-  
-  // Effect to navigate when an order ID is set
-  useEffect(() => {
-    if (completedOrderId) {
-      clearCart();
-      router.push(`/order/success/${completedOrderId}`);
-    }
-  }, [completedOrderId, router, clearCart]);
-
 
   const guestForm = useForm<z.infer<typeof guestCheckoutSchema>>({
     resolver: zodResolver(guestCheckoutSchema),
@@ -142,11 +133,11 @@ export default function CheckoutDetailsPage() {
     };
 
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !completedOrderId) {
         router.replace('/checkout');
     }
     fetchUserDetails();
-  }, [user, cartItems, router]);
+  }, [user, cartItems, router, completedOrderId]);
   
   const handleAddressUpdate = (newDetails: UserDetails) => {
     setUserDetails(prev => ({...prev, ...newDetails}));
@@ -233,7 +224,8 @@ export default function CheckoutDetailsPage() {
                 title: "Order Placed!",
                 description: "Your order has been successfully processed."
             });
-            setCompletedOrderId(newOrderId); // Set the order ID to trigger navigation
+            clearCart();
+            setCompletedOrderId(newOrderId); 
         } else {
             throw new Error('Order creation failed to return an ID.');
         }
@@ -246,8 +238,14 @@ export default function CheckoutDetailsPage() {
     }
   };
 
+  const handleDialogClose = () => {
+    setCompletedOrderId(null);
+    router.push('/');
+  }
 
   return (
+    <>
+    <OrderSuccessDialog orderId={completedOrderId} onOpenChange={(open) => !open && handleDialogClose()} />
     <div className="container mx-auto py-16 bg-background">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-headline font-bold">Checkout Details</h1>
@@ -458,5 +456,6 @@ export default function CheckoutDetailsPage() {
             </div>
         </div>
     </div>
+    </>
   );
 }

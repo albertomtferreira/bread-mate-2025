@@ -58,7 +58,7 @@ exports.handleContactForm = (0, https_1.onCall)(async (request) => {
 exports.createOrder = (0, https_1.onCall)(async (request) => {
     var _a, _b;
     try {
-        logger.info(`DEBUG (functions): Order payload received for user ${((_a = request.auth) === null || _a === void 0 ? void 0 : _a.uid) || 'guest'}:`, JSON.stringify(request.data, null, 2));
+        logger.info(`Order payload received for user ${((_a = request.auth) === null || _a === void 0 ? void 0 : _a.uid) || 'guest'}:`, JSON.stringify(request.data, null, 2));
         const _c = request.data, { subscribeToNewsletter, addressLine1, addressLine2, city, postcode, deliveryAddressLine1, deliveryAddressLine2, deliveryCity, deliveryPostcode } = _c, orderPayload = __rest(_c, ["subscribeToNewsletter", "addressLine1", "addressLine2", "city", "postcode", "deliveryAddressLine1", "deliveryAddressLine2", "deliveryCity", "deliveryPostcode"]);
         // Validate the payload
         if (!orderPayload) {
@@ -76,11 +76,8 @@ exports.createOrder = (0, https_1.onCall)(async (request) => {
             city: deliveryCity || city,
             postcode: deliveryPostcode || postcode,
         };
-        logger.info('DEBUG (functions): Final delivery address:', JSON.stringify(deliveryAddress, null, 2));
         // Add server-side fields
         const orderData = Object.assign(Object.assign({}, orderPayload), { deliveryAddress, status: 'Processing', createdAt: firestore_1.FieldValue.serverTimestamp(), userId: ((_b = request.auth) === null || _b === void 0 ? void 0 : _b.uid) || null });
-        logger.info('DEBUG (functions): Final orderData to be saved:', JSON.stringify(orderData, null, 2));
-        logger.info('Preparing to write order data to Firestore');
         // Write to Firestore and return the ID
         const firestore = (0, firestore_1.getFirestore)();
         const docRef = await firestore.collection('orders').add(orderData);
@@ -102,7 +99,6 @@ exports.createOrder = (0, https_1.onCall)(async (request) => {
             status: 'success',
             message: 'Order created successfully'
         };
-        logger.info('Returning response:', JSON.stringify(response));
         return response;
     }
     catch (error) {
