@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendStatusUpdateEmail = exports.sendNewOrderEmails = void 0;
+exports.sendNewContactEmailToAdmin = exports.sendStatusUpdateEmail = exports.sendNewOrderEmails = void 0;
 const logger = require("firebase-functions/logger");
 // A placeholder for your site admin's email.
 // In a real application, this should come from environment variables.
@@ -100,4 +100,27 @@ async function sendStatusUpdateEmail(update) {
     await sendEmail(mail);
 }
 exports.sendStatusUpdateEmail = sendStatusUpdateEmail;
+async function sendNewContactEmailToAdmin(contact) {
+    const adminMail = {
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject: `New Message from ${contact.name} via Contact Form`,
+        text: `You have received a new message from your website contact form.\n\nName: ${contact.name}\nEmail: ${contact.email}\nMessage:\n${contact.message}`,
+        html: `
+      <h2>New Contact Form Submission</h2>
+      <p>You have received a new message from your website contact form.</p>
+      <hr>
+      <p><strong>Name:</strong> ${contact.name}</p>
+      <p><strong>Email:</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>
+      <p><strong>Message:</strong></p>
+      <blockquote style="border-left: 2px solid #cccccc; padding-left: 1rem; margin-left: 1rem; font-style: italic;">
+        ${contact.message.replace(/\n/g, '<br>')}
+      </blockquote>
+      <hr>
+      <p>You can view and archive this message in the admin dashboard.</p>
+    `,
+    };
+    await sendEmail(adminMail);
+}
+exports.sendNewContactEmailToAdmin = sendNewContactEmailToAdmin;
 //# sourceMappingURL=emailService.js.map

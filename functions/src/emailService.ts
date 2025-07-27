@@ -1,9 +1,11 @@
 import * as logger from 'firebase-functions/logger';
+import { defineString } from 'firebase-functions/params';
+import * as Brevo from 'sib-api-v3-sdk';
 
-// A placeholder for your site admin's email.
-// In a real application, this should come from environment variables.
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com'; 
-const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@example.com';
+// Define environment variables for configuration
+const brevoApiKey = defineString('BREVO_KEY');
+const fromEmail = defineString('FROM_EMAIL', { default: 'noreply@example.com' });
+const adminEmail = defineString('ADMIN_EMAIL', { default: 'admin@example.com' });
 
 interface OrderData {
   orderId: string;
@@ -26,28 +28,42 @@ interface ContactData {
 }
 
 /**
- * A placeholder function to send an email.
- * In a real-world scenario, this would use an email service provider
- * like SendGrid, Mailgun, etc. For now, it just logs to the console.
+ * Sends an email using the Brevo (Sendinblue) API.
  */
-async function sendEmail(mailOptions: { from: string; to: string; subject: string; text: string; html: string; }) {
-  logger.info('--- Sending Email ---');
-  logger.info(`From: ${mailOptions.from}`);
-  logger.info(`To: ${mailOptions.to}`);
-  logger.info(`Subject: ${mailOptions.subject}`);
-  logger.info('Body (HTML):', mailOptions.html);
-  logger.info('--- Email Sent (Logged) ---');
-  // In a real implementation, the actual email sending logic would go here.
-  // Example using a hypothetical email provider:
-  // await emailProvider.send(mailOptions);
-  return Promise.resolve();
+async function sendEmail(mailOptions: { to: string; subject: string; text: string; html: string; }) {
+  const SIB_API_KEY = brevoApiKey.value();
+  const FROM_EMAIL = fromEmail.value();
+
+  if (!SIB_API_KEY) {
+      logger.error('Brevo API key is not configured. Email not sent.');
+      return;
+  }
+  
+  const defaultClient = Brevo.ApiClient.instance;
+  const apiKey = defaultClient.authentications['api-key'];
+  apiKey.apiKey = SIB_API_KEY;
+
+  const apiInstance = new Brevo.TransactionalEmailsApi();
+  const sendSmtpEmail = new Brevo.SendSmtpEmail();
+
+  sendSmtpEmail.subject = mailOptions.subject;
+  sendSmtpEmail.htmlContent = mailOptions.html;
+  sendSmtpEmail.sender = { name: 'bread mate', email: FROM_EMAIL };
+  sendSmtpEmail.to = [{ email: mailOptions.to }];
+  sendSmtpEmail.textContent = mailOptions.text;
+
+  try {
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    logger.info(`Email sent successfully to ${mailOptions.to}`);
+  } catch (error) {
+    logger.error('Error sending email via Brevo:', error);
+  }
 }
 
 
 export async function sendNewOrderEmails(order: OrderData) {
   // 1. Send confirmation email to the customer
   const customerMail = {
-    from: FROM_EMAIL,
     to: order.customerEmail,
     subject: `Your order confirmation #${order.orderId.substring(0, 7)}`,
     text: `Hi ${order.customerName},\n\nThank you for your order! We've received it and will start preparing it shortly.\n\nOrder ID: ${order.orderId}\nTotal: £${order.total.toFixed(2)}\n\nWe'll notify you when it's on its way.\n\nThanks,\nThe bread mate Team`,
@@ -70,8 +86,7 @@ export async function sendNewOrderEmails(order: OrderData) {
 
   // 2. Send notification email to the admin
   const adminMail = {
-    from: FROM_EMAIL,
-    to: ADMIN_EMAIL,
+    to: adminEmail.value(),
     subject: `New Order Received: #${order.orderId.substring(0, 7)}`,
     text: `A new order has been placed by ${order.customerName} (${order.customerEmail}).\n\nOrder ID: ${order.orderId}\nTotal: £${order.total.toFixed(2)}\n\nPlease check the admin dashboard to view the order details.`,
     html: `
@@ -117,7 +132,6 @@ export async function sendStatusUpdateEmail(update: StatusUpdateData) {
     }
     
     const mail = {
-        from: FROM_EMAIL,
         to: customerEmail,
         subject: subject,
         text: htmlBody.replace(/<[^>]+>/g, ''), // Simple text version
@@ -130,8 +144,7 @@ export async function sendStatusUpdateEmail(update: StatusUpdateData) {
 
 export async function sendNewContactEmailToAdmin(contact: ContactData) {
   const adminMail = {
-    from: FROM_EMAIL,
-    to: ADMIN_EMAIL,
+    to: adminEmail.value(),
     subject: `New Message from ${contact.name} via Contact Form`,
     text: `You have received a new message from your website contact form.\n\nName: ${contact.name}\nEmail: ${contact.email}\nMessage:\n${contact.message}`,
     html: `
