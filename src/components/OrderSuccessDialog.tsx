@@ -79,16 +79,19 @@ export function OrderSuccessDialog({ orderId, onOpenChange }: OrderSuccessDialog
     }
     
     if (order) {
+        const deliveryFee = 2.00;
+        const subtotal = order.total - deliveryFee;
+
         return (
             <>
-                <DialogHeader className="text-center items-center">
+                <DialogHeader className="text-center items-center pt-6">
                     <CheckCircle2 className="h-16 w-16 text-green-500" />
                     <DialogTitle className="text-3xl font-headline">Thank You For Your Order!</DialogTitle>
                     <DialogDescription>
                     Your order <span className="font-semibold text-primary">#{order.id.substring(0, 7)}...</span> has been placed.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="my-6">
+                <div className="my-6 px-6">
                     <Separator className="my-4" />
                     <h3 className="text-lg font-semibold mb-2">Order Summary</h3>
                     <div className="space-y-2">
@@ -99,12 +102,21 @@ export function OrderSuccessDialog({ orderId, onOpenChange }: OrderSuccessDialog
                             </div>
                         ))}
                     </div>
-                    <Separator className="my-4" />
-                    <div className="space-y-2">
-                        <div className="flex justify-between font-semibold">
-                            <span>Total</span>
-                            <span>£{order?.total.toFixed(2)}</span>
+                     <Separator className="my-4" />
+                     <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span>Subtotal</span>
+                            <span>£{subtotal.toFixed(2)}</span>
                         </div>
+                        <div className="flex justify-between text-sm">
+                            <span>Delivery</span>
+                            <span>£{deliveryFee.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <Separator className="my-4" />
+                    <div className="flex justify-between font-bold text-base">
+                        <span>Total</span>
+                        <span>£{order?.total.toFixed(2)}</span>
                     </div>
                     <Separator className="my-4" />
                     <div className="space-y-2">
@@ -117,8 +129,8 @@ export function OrderSuccessDialog({ orderId, onOpenChange }: OrderSuccessDialog
                         </address>
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button asChild className="w-full mt-4">
+                <DialogFooter className="px-6 pb-6">
+                    <Button asChild className="w-full mt-4 bg-accent hover:bg-accent/90">
                         <Link href="/"><Home/> Go to Homepage</Link>
                     </Button>
                 </DialogFooter>
@@ -131,7 +143,7 @@ export function OrderSuccessDialog({ orderId, onOpenChange }: OrderSuccessDialog
 
   return (
     <Dialog open={!!orderId} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-lg p-0">
         {renderContent()}
       </DialogContent>
     </Dialog>

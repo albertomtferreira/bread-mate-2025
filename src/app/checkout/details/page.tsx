@@ -161,7 +161,7 @@ export default function CheckoutDetailsPage() {
   
   const useDifferentDeliveryAddress = guestForm.watch('useDifferentDeliveryAddress');
   
-  const handlePaymentConfirmation = async (): Promise<void> => {
+  const handlePaymentConfirmation = async (): Promise<string | null> => {
     let orderPayload;
     
     if (user) {
@@ -172,7 +172,7 @@ export default function CheckoutDetailsPage() {
                 title: "Invalid Address",
                 description: "Please select a valid address before proceeding."
             });
-            return; // Stop processing
+            return null;
         }
         orderPayload = {
             userId: user?.uid,
@@ -196,7 +196,7 @@ export default function CheckoutDetailsPage() {
                 title: "Invalid Details",
                 description: "Please fill in all required fields correctly."
             });
-            return; // Stop processing
+            return null;
         }
         const guestData = guestForm.getValues();
         orderPayload = {
@@ -226,6 +226,7 @@ export default function CheckoutDetailsPage() {
             });
             clearCart();
             setCompletedOrderId(newOrderId); 
+            return newOrderId;
         } else {
             throw new Error('Order creation failed to return an ID.');
         }
@@ -235,6 +236,7 @@ export default function CheckoutDetailsPage() {
             title: 'Order Failed',
             description: 'There was a problem placing your order. Please try again.'
         });
+        return null;
     }
   };
 
