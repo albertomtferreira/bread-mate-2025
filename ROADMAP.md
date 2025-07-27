@@ -54,7 +54,7 @@ This document tracks the features and progress for the Flourish & Dough applicat
 
 ### 3.1. Notifications & Communication
 - [ ] **Real Email Provider (M):** Replace the placeholder email logger with a real email service (e.g., SendGrid, Mailgun) for sending transactional emails.
-- [ ] **Admin Email for New Contact (S):** Send an email notification to an admin when a new contact form message is submitted.
+- [x] **Admin Email for New Contact (S):** Send an email notification to an admin when a new contact form message is submitted.
 - [ ] **Direct Reply to Messages (L):** Implement functionality to reply to customer messages directly from the admin portal.
 - [ ] **reCAPTCHA (M):** Add reCAPTCHA to the contact form to prevent spam.
 

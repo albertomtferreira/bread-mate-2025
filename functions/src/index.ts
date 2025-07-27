@@ -4,7 +4,7 @@ import * as logger from 'firebase-functions/logger';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { sendNewOrderEmails, sendStatusUpdateEmail } from './emailService';
+import { sendNewOrderEmails, sendStatusUpdateEmail, sendNewContactEmailToAdmin } from './emailService';
 
 
 // Initialize Firebase Admin SDK
@@ -35,8 +35,11 @@ export const handleContactForm = onCall(async (request) => {
 
     const firestore = getFirestore();
     await firestore.collection('contacts').add(submission);
-
     logger.info(`Successfully saved contact submission from ${name} (${email})`);
+
+    // Send email notification to admin
+    await sendNewContactEmailToAdmin({ name, email, message });
+    logger.info(`Admin notification email queued for submission from ${email}`);
 
     return {
       success: true,
