@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if the requesting user is an admin by reading their document.
+    function isRequesterAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    match /users/{userId} {
+      // Allow reading user documents if the requester is an admin, or if they are reading their own document.
+      allow read: if request.auth != null && (isRequesterAdmin() || request.auth.uid == userId);
+      
+      // Allow creating a user document (signup)
+      allow create: if request.auth != null;
+
+      // Allow updating a user document if:
+      // 1. The requester is an admin (can change anything).
+      // 2. The requester is updating their own document, BUT they are NOT changing their own isAdmin status.
+      allow update: if request.auth != null && (isRequesterAdmin() || (request.auth.uid == userId && request.resource.data.isAdmin == resource.data.isAdmin));
+    }
+    
+    match /orders/{orderId} {
+      // Temporarily allow any authenticated user to create an order for testing.
+      allow create: if request.auth != null;
+      // Only admins can read, update, or delete existing orders.
+      allow read, update, delete: if request.auth != null && isRequesterAdmin();
+    }
+
+    match /{collection}/{docId} {
+       // For all other collections (products, gallery, etc.)
+       // Allow anyone to read.
+       allow read: if true;
+       // Only allow admins to write (create, update, delete).
+       allow write: if request.auth != null && isRequesterAdmin();
+    }
+  }
+}
