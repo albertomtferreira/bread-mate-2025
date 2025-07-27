@@ -35,9 +35,17 @@ export function PayPalDialog({ total, onConfirm, disabled = false }: PayPalDialo
     setIsProcessing(true);
     try {
       await onConfirm();
+      // Only close the dialog if onConfirm succeeds without navigation issues.
+      // The parent component is now responsible for navigation.
+    } catch (error) {
+      // Error is handled by the parent component's toast message.
+      console.error("Payment confirmation failed:", error);
     } finally {
-      // Ensure processing state is reset even if onConfirm throws
+      // Reset processing state regardless of outcome
       setIsProcessing(false);
+      // We can optionally close the dialog here, but it might be better
+      // to let the user see the dialog until navigation is successful.
+      // setIsOpen(false); 
     }
   }
 

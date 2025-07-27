@@ -144,6 +144,7 @@ export default function CheckoutDetailsPage() {
         description: "Your order has been successfully processed."
     });
     clearCart();
+    console.log("Order Placed! Navigating to success page for order:", orderId);
     router.push(`/order/success/${orderId}`);
   };
   
@@ -169,12 +170,87 @@ export default function CheckoutDetailsPage() {
 
  const getFinalDeliveryAddress = () => {
     if (user) {
-        return selectedAddress === 'billing' ? billingAddress : deliveryAddress;
+        const address = selectedAddress === 'billing' ? billingAddress : deliveryAddress;
+        return {
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2,
+          city: address.city,
+          postcode: address.postcode
+        }
     }
-    return {};
+    return null;
   }
   
   const useDifferentDeliveryAddress = guestForm.watch('useDifferentDeliveryAddress');
+  
+  const handlePaymentConfirmation = async () => {
+    let orderPayload;
+    
+    if (user) {
+        const finalAddress = getFinalDeliveryAddress();
+        if (!finalAddress?.addressLine1) {
+             toast({
+                variant: "destructive",
+                title: "Invalid Address",
+                description: "Please select a valid address before proceeding."
+            });
+            return; // Stop processing
+        }
+        orderPayload = {
+            userId: user?.uid,
+            customerName: user.name || 'N/A',
+            customerEmail: user.email || 'N/A',
+            items: cartItems,
+            total: total,
+            deliveryAddress: finalAddress,
+            subscribeToNewsletter: userDetails?.subscribeToNewsletter || false,
+        };
+    } else {
+        const isGuestFormValid = await guestForm.trigger();
+        if (!isGuestFormValid) {
+            toast({
+                variant: "destructive",
+                title: "Invalid Details",
+                description: "Please fill in all required fields correctly."
+            });
+            return; // Stop processing
+        }
+        const guestData = guestForm.getValues();
+        orderPayload = {
+            customerName: guestData.customerName,
+            customerEmail: guestData.customerEmail,
+            items: cartItems,
+            total: total,
+            addressLine1: guestData.addressLine1,
+            addressLine2: guestData.addressLine2,
+            city: guestData.city,
+            postcode: guestData.postcode,
+            deliveryAddressLine1: guestData.deliveryAddressLine1,
+            deliveryAddressLine2: guestData.deliveryAddressLine2,
+            deliveryCity: guestData.deliveryCity,
+            deliveryPostcode: guestData.deliveryPostcode,
+            subscribeToNewsletter: guestData.subscribeToNewsletter
+        }
+    }
+
+    try {
+        const orderId = await createOrder(orderPayload);
+        if (orderId) {
+            handleSuccessfulOrder(orderId);
+        } else {
+            throw new Error('Order creation failed to return an ID.');
+        }
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Order Failed',
+            description: 'There was a problem placing your order. Please try again.'
+        });
+        // Re-throw if you want the PayPal dialog to also know about the failure
+        throw error;
+    }
+  };
+
 
   return (
     <div className="container mx-auto py-16 bg-background">
@@ -376,58 +452,7 @@ export default function CheckoutDetailsPage() {
                         </div>
                         <PayPalDialog 
                             total={total}
-                            onConfirm={async () => {
-                                let orderPayload;
-                                
-                                if (user) {
-                                    orderPayload = {
-                                        userId: user?.uid,
-                                        customerName: user.name || 'N/A',
-                                        customerEmail: user.email || 'N/A',
-                                        items: cartItems,
-                                        total: total,
-                                        deliveryAddress: getFinalDeliveryAddress() as any
-                                    };
-                                } else {
-                                    const isGuestFormValid = await guestForm.trigger();
-                                    if (!isGuestFormValid) {
-                                        toast({
-                                            variant: "destructive",
-                                            title: "Invalid Details",
-                                            description: "Please fill in all required fields correctly."
-                                        });
-                                        return; // Stop processing
-                                    }
-                                    const guestData = guestForm.getValues();
-                                    orderPayload = {
-                                        customerName: guestData.customerName,
-                                        customerEmail: guestData.customerEmail,
-                                        items: cartItems,
-                                        total: total,
-                                        addressLine1: guestData.addressLine1,
-                                        addressLine2: guestData.addressLine2,
-                                        city: guestData.city,
-                                        postcode: guestData.postcode,
-                                        deliveryAddressLine1: guestData.deliveryAddressLine1,
-                                        deliveryAddressLine2: guestData.deliveryAddressLine2,
-                                        deliveryCity: guestData.deliveryCity,
-                                        deliveryPostcode: guestData.deliveryPostcode,
-                                        subscribeToNewsletter: guestData.subscribeToNewsletter
-                                    }
-                                }
-
-                                const orderId = await createOrder(orderPayload);
-                                
-                                if (orderId) {
-                                    handleSuccessfulOrder(orderId);
-                                } else {
-                                    toast({
-                                        variant: 'destructive',
-                                        title: 'Order Failed',
-                                        description: 'There was a problem placing your order. Please try again.'
-                                    })
-                                }
-                            }}
+                            onConfirm={handlePaymentConfirmation}
                             disabled={(user && !billingAddress.addressLine1) || (user && !deliveryAddress.addressLine1 && selectedAddress === 'delivery')}
                         />
                          <Button variant="link" className="w-full mt-2" onClick={() => router.push('/checkout')}>
