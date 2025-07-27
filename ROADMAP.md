@@ -53,16 +53,17 @@ This document tracks the features and progress for the Flourish & Dough applicat
 ## Phase 3: Enhancements & Integrations (Future)
 
 ### 3.1. Notifications & Communication
-- [ ] **Real Email Provider:** Replace the placeholder email logger with a real email service (e.g., SendGrid, Mailgun) for sending transactional emails.
-- [ ] **Admin Email for New Contact:** Send an email notification to an admin when a new contact form message is submitted.
-- [ ] **Direct Reply to Messages:** Implement functionality to reply to customer messages directly from the admin portal.
-- [ ] **reCAPTCHA:** Add reCAPTCHA to the contact form to prevent spam.
+- [ ] **Real Email Provider (M):** Replace the placeholder email logger with a real email service (e.g., SendGrid, Mailgun) for sending transactional emails.
+- [ ] **Admin Email for New Contact (S):** Send an email notification to an admin when a new contact form message is submitted.
+- [ ] **Direct Reply to Messages (L):** Implement functionality to reply to customer messages directly from the admin portal.
+- [ ] **reCAPTCHA (M):** Add reCAPTCHA to the contact form to prevent spam.
 
 ### 3.2. Product & Store Enhancements
-- [ ] **Nutritional Information:** Add fields for nutritional details (calories, fat, etc.) to products and display them.
-- [ ] **Favorite Items:** Allow logged-in users to "favorite" products for easy access later.
+- [ ] **Nutritional Information (M):** Add fields for nutritional details (calories, fat, etc.) to products and display them.
+- [ ] **Favorite Items (L):** Allow logged-in users to "favorite" products for easy access later.
 
 ### 3.3. AI-Powered Features
-- [ ] **AI-Powered Product Descriptions:** Build a tool for admins to generate product descriptions using AI by providing simple keywords.
-- [ ] **AI Bread Recommender:** A tool for customers to get product recommendations based on natural language queries.
-- [ ] **AI Contact Form Analysis:** Automatically categorize and prioritize incoming contact messages using AI.
+- [ ] **AI-Powered Product Descriptions (M):** Build a tool for admins to generate product descriptions using AI by providing simple keywords.
+- [ ] **AI Bread Recommender (L):** A tool for customers to get product recommendations based on natural language queries.
+- [ ] **AI Contact Form Analysis (L):** Automatically categorize and prioritize incoming contact messages using AI.
+
