@@ -95,6 +95,7 @@ export default function CheckoutDetailsPage() {
   const { user } = useAuth();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<'billing' | 'delivery'>('delivery');
+  const [orderId, setOrderId] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -138,15 +139,16 @@ export default function CheckoutDetailsPage() {
     fetchUserDetails();
   }, [user, cartItems, router]);
 
-  const handleSuccessfulOrder = (orderId: string) => {
-    toast({
+  useEffect(() => {
+    if (orderId) {
+      toast({
         title: "Order Placed!",
         description: "Your order has been successfully processed."
-    });
-    clearCart();
-    console.log("Order Placed! Navigating to success page for order:", orderId);
-    router.push(`/order/success/${orderId}`);
-  };
+      });
+      clearCart();
+      router.push(`/order/success/${orderId}`);
+    }
+  }, [orderId, router, clearCart, toast]);
   
   const handleAddressUpdate = (newDetails: UserDetails) => {
     setUserDetails(prev => ({...prev, ...newDetails}));
@@ -167,34 +169,21 @@ export default function CheckoutDetailsPage() {
     city: hasDeliveryAddress ? userDetails.deliveryCity : userDetails?.city,
     postcode: hasDeliveryAddress ? userDetails.deliveryPostcode : userDetails?.postcode,
   };
-
- const getFinalDeliveryAddress = () => {
-    if (user) {
-        const address = selectedAddress === 'billing' ? billingAddress : deliveryAddress;
-        return {
-          addressLine1: address.addressLine1,
-          addressLine2: address.addressLine2,
-          city: address.city,
-          postcode: address.postcode
-        }
-    }
-    return null;
-  }
   
   const useDifferentDeliveryAddress = guestForm.watch('useDifferentDeliveryAddress');
   
-  const handlePaymentConfirmation = async () => {
+  const handlePaymentConfirmation = async (): Promise<string | null> => {
     let orderPayload;
     
     if (user) {
-        const finalAddress = getFinalDeliveryAddress();
+        const finalAddress = selectedAddress === 'billing' ? billingAddress : deliveryAddress;
         if (!finalAddress?.addressLine1) {
              toast({
                 variant: "destructive",
                 title: "Invalid Address",
                 description: "Please select a valid address before proceeding."
             });
-            return; // Stop processing
+            return null; // Stop processing
         }
         orderPayload = {
             userId: user?.uid,
@@ -202,7 +191,12 @@ export default function CheckoutDetailsPage() {
             customerEmail: user.email || 'N/A',
             items: cartItems,
             total: total,
-            deliveryAddress: finalAddress,
+            deliveryAddress: {
+                addressLine1: finalAddress.addressLine1,
+                addressLine2: finalAddress.addressLine2,
+                city: finalAddress.city,
+                postcode: finalAddress.postcode
+            },
             subscribeToNewsletter: userDetails?.subscribeToNewsletter || false,
         };
     } else {
@@ -213,7 +207,7 @@ export default function CheckoutDetailsPage() {
                 title: "Invalid Details",
                 description: "Please fill in all required fields correctly."
             });
-            return; // Stop processing
+            return null; // Stop processing
         }
         const guestData = guestForm.getValues();
         orderPayload = {
@@ -234,9 +228,10 @@ export default function CheckoutDetailsPage() {
     }
 
     try {
-        const orderId = await createOrder(orderPayload);
-        if (orderId) {
-            handleSuccessfulOrder(orderId);
+        const newOrderId = await createOrder(orderPayload);
+        if (newOrderId) {
+            setOrderId(newOrderId); // Set orderId to trigger navigation effect
+            return newOrderId;
         } else {
             throw new Error('Order creation failed to return an ID.');
         }
@@ -246,8 +241,7 @@ export default function CheckoutDetailsPage() {
             title: 'Order Failed',
             description: 'There was a problem placing your order. Please try again.'
         });
-        // Re-throw if you want the PayPal dialog to also know about the failure
-        throw error;
+        return null;
     }
   };
 

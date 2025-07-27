@@ -15,7 +15,7 @@ import { Loader2 } from 'lucide-react';
 
 interface PayPalDialogProps {
   total: number;
-  onConfirm: () => Promise<void>;
+  onConfirm: () => Promise<string | null>;
   disabled?: boolean;
 }
 
@@ -34,18 +34,14 @@ export function PayPalDialog({ total, onConfirm, disabled = false }: PayPalDialo
   const handleConfirm = async () => {
     setIsProcessing(true);
     try {
-      await onConfirm();
-      // Only close the dialog if onConfirm succeeds without navigation issues.
-      // The parent component is now responsible for navigation.
+      const orderId = await onConfirm();
+      if (orderId) {
+        setIsOpen(false);
+      }
     } catch (error) {
-      // Error is handled by the parent component's toast message.
       console.error("Payment confirmation failed:", error);
     } finally {
-      // Reset processing state regardless of outcome
       setIsProcessing(false);
-      // We can optionally close the dialog here, but it might be better
-      // to let the user see the dialog until navigation is successful.
-      // setIsOpen(false); 
     }
   }
 
