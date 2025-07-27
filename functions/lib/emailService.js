@@ -1,4 +1,5 @@
 "use strict";
+'use server';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNewContactEmailToAdmin = exports.sendStatusUpdateEmail = exports.sendNewOrderEmails = void 0;
 const logger = require("firebase-functions/logger");
