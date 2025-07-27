@@ -1,6 +1,6 @@
 import * as logger from 'firebase-functions/logger';
 import { defineString } from 'firebase-functions/params';
-import * as Brevo from 'sib-api-v3-sdk';
+const Brevo = require('sib-api-v3-sdk');
 
 // Define environment variables for configuration
 const brevoApiKey = defineString('BREVO_KEY');
