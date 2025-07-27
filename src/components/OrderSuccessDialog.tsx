@@ -15,7 +15,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, Home, XCircle } from 'lucide-react';
+import { CheckCircle2, Home, XCircle, Printer } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface OrderSuccessDialogProps {
     orderId: string | null;
@@ -56,6 +57,12 @@ export function OrderSuccessDialog({ orderId, onOpenChange }: OrderSuccessDialog
     fetchOrder();
   }, [orderId]);
   
+  const handlePrint = () => {
+    setTimeout(() => {
+        window.print();
+    }, 100);
+  };
+  
   const renderContent = () => {
     if (loading) {
         return (
@@ -84,54 +91,71 @@ export function OrderSuccessDialog({ orderId, onOpenChange }: OrderSuccessDialog
 
         return (
             <>
-                <DialogHeader className="text-center items-center pt-6">
-                    <CheckCircle2 className="h-16 w-16 text-green-500" />
-                    <DialogTitle className="text-3xl font-headline">Thank You For Your Order!</DialogTitle>
-                    <DialogDescription>
-                    Your order <span className="font-semibold text-primary">#{order.id.substring(0, 7)}...</span> has been placed.
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="my-6 px-6">
-                    <Separator className="my-4" />
-                    <h3 className="text-lg font-semibold mb-2">Order Summary</h3>
-                    <div className="space-y-2">
-                        {order?.items.map((item) => (
-                            <div key={item.id} className="flex justify-between items-center text-sm">
-                                <span>{item.name} <span className="text-muted-foreground">x {item.quantity}</span></span>
-                                <span>£{(item.price * item.quantity).toFixed(2)}</span>
+                <div className="printable-area p-6">
+                    {/* --- Print-Only Header --- */}
+                    <div className="hidden print:block mb-8">
+                        <div className="flex justify-between items-center pb-4 border-b">
+                            <Logo className="h-16" />
+                            <div className="text-right">
+                                <h2 className="text-2xl font-bold font-headline">Order Receipt</h2>
+                                <p className="text-muted-foreground">Order ID: {order.id}</p>
                             </div>
-                        ))}
-                    </div>
-                     <Separator className="my-4" />
-                     <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span>Subtotal</span>
-                            <span>£{subtotal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                            <span>Delivery</span>
-                            <span>£{deliveryFee.toFixed(2)}</span>
                         </div>
                     </div>
-                    <Separator className="my-4" />
-                    <div className="flex justify-between font-bold text-base">
-                        <span>Total</span>
-                        <span>£{order?.total.toFixed(2)}</span>
-                    </div>
-                    <Separator className="my-4" />
-                    <div className="space-y-2">
-                        <h4 className="font-semibold">Shipping to:</h4>
-                        <address className="not-italic text-sm text-muted-foreground">
-                            {order?.customerName} <br/>
-                            {order?.deliveryAddress.addressLine1} <br/>
-                            {order?.deliveryAddress.addressLine2 && <>{order.deliveryAddress.addressLine2}<br/></>}
-                            {order?.deliveryAddress.city}, {order?.deliveryAddress.postcode}
-                        </address>
+                
+                    <DialogHeader className="text-center items-center print:hidden">
+                        <CheckCircle2 className="h-16 w-16 text-green-500" />
+                        <DialogTitle className="text-3xl font-headline">Thank You For Your Order!</DialogTitle>
+                        <DialogDescription>
+                        Your order <span className="font-semibold text-primary">#{order.id.substring(0, 7)}...</span> has been placed.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="my-6">
+                        <Separator className="my-4" />
+                        <h3 className="text-lg font-semibold mb-2">Order Summary</h3>
+                        <div className="space-y-2">
+                            {order?.items.map((item) => (
+                                <div key={item.id} className="flex justify-between items-center text-sm">
+                                    <span>{item.name} <span className="text-muted-foreground">x {item.quantity}</span></span>
+                                    <span>£{(item.price * item.quantity).toFixed(2)}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <Separator className="my-4" />
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span>Subtotal</span>
+                                <span>£{subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span>Delivery</span>
+                                <span>£{deliveryFee.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <Separator className="my-4" />
+                        <div className="flex justify-between font-bold text-base">
+                            <span>Total</span>
+                            <span>£{order?.total.toFixed(2)}</span>
+                        </div>
+                        <Separator className="my-4" />
+                        <div className="space-y-2">
+                            <h4 className="font-semibold">Shipping to:</h4>
+                            <address className="not-italic text-sm text-muted-foreground">
+                                {order?.customerName} <br/>
+                                {order?.deliveryAddress.addressLine1} <br/>
+                                {order?.deliveryAddress.addressLine2 && <>{order.deliveryAddress.addressLine2}<br/></>}
+                                {order?.deliveryAddress.city}, {order?.deliveryAddress.postcode}
+                            </address>
+                        </div>
                     </div>
                 </div>
-                <DialogFooter className="px-6 pb-6">
-                    <Button asChild className="w-full mt-4 bg-accent hover:bg-accent/90">
-                        <Link href="/"><Home/> Go to Homepage</Link>
+
+                <DialogFooter className="px-6 pb-6 pt-0 print:hidden flex-row justify-end space-x-2">
+                    <Button variant="outline" onClick={handlePrint}>
+                        <Printer className="mr-2 h-4 w-4" /> Print Receipt
+                    </Button>
+                    <Button asChild className="bg-accent hover:bg-accent/90">
+                        <Link href="/"><Home className="mr-2 h-4 w-4"/> Go to Homepage</Link>
                     </Button>
                 </DialogFooter>
             </>
