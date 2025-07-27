@@ -95,7 +95,6 @@ export default function CheckoutDetailsPage() {
   const { user } = useAuth();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<'billing' | 'delivery'>('delivery');
-  const [orderId, setOrderId] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -138,17 +137,6 @@ export default function CheckoutDetailsPage() {
     }
     fetchUserDetails();
   }, [user, cartItems, router]);
-
-  useEffect(() => {
-    if (orderId) {
-      toast({
-        title: "Order Placed!",
-        description: "Your order has been successfully processed."
-      });
-      clearCart();
-      router.push(`/order/success/${orderId}`);
-    }
-  }, [orderId, router, clearCart, toast]);
   
   const handleAddressUpdate = (newDetails: UserDetails) => {
     setUserDetails(prev => ({...prev, ...newDetails}));
@@ -172,7 +160,8 @@ export default function CheckoutDetailsPage() {
   
   const useDifferentDeliveryAddress = guestForm.watch('useDifferentDeliveryAddress');
   
-  const handlePaymentConfirmation = async (): Promise<string | null> => {
+  const handlePaymentConfirmation = async (): Promise<void> => {
+    console.log('DEBUG: handlePaymentConfirmation called');
     let orderPayload;
     
     if (user) {
@@ -183,7 +172,7 @@ export default function CheckoutDetailsPage() {
                 title: "Invalid Address",
                 description: "Please select a valid address before proceeding."
             });
-            return null; // Stop processing
+            return; // Stop processing
         }
         orderPayload = {
             userId: user?.uid,
@@ -207,7 +196,7 @@ export default function CheckoutDetailsPage() {
                 title: "Invalid Details",
                 description: "Please fill in all required fields correctly."
             });
-            return null; // Stop processing
+            return; // Stop processing
         }
         const guestData = guestForm.getValues();
         orderPayload = {
@@ -228,20 +217,34 @@ export default function CheckoutDetailsPage() {
     }
 
     try {
+        console.log('DEBUG: Creating order with payload:', JSON.stringify(orderPayload, null, 2));
         const newOrderId = await createOrder(orderPayload);
+        console.log('DEBUG: Order created with ID:', newOrderId);
+        
         if (newOrderId) {
-            setOrderId(newOrderId); // Set orderId to trigger navigation effect
-            return newOrderId;
+            toast({
+                title: "Order Placed!",
+                description: "Your order has been successfully processed."
+            });
+            console.log('DEBUG: Clearing cart...');
+            clearCart();
+            console.log('DEBUG: Cart cleared. Navigating to success page...');
+            try {
+                router.push(`/order/success/${newOrderId}`);
+                console.log('DEBUG: router.push command issued successfully.');
+            } catch (e) {
+                console.error('DEBUG: Error during router.push:', e);
+            }
         } else {
             throw new Error('Order creation failed to return an ID.');
         }
     } catch (error) {
+        console.error('DEBUG: Error during payment confirmation:', error);
         toast({
             variant: 'destructive',
             title: 'Order Failed',
             description: 'There was a problem placing your order. Please try again.'
         });
-        return null;
     }
   };
 
