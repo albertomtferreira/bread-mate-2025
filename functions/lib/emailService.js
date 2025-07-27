@@ -5,38 +5,48 @@ exports.sendNewOrderEmails = sendNewOrderEmails;
 exports.sendStatusUpdateEmail = sendStatusUpdateEmail;
 exports.sendNewContactEmailToAdmin = sendNewContactEmailToAdmin;
 const logger = require("firebase-functions/logger");
-const params_1 = require("firebase-functions/params");
 const Brevo = require('sib-api-v3-sdk');
-// Define environment variables for configuration
-const brevoApiKey = (0, params_1.defineString)('BREVO_KEY');
-const fromEmail = (0, params_1.defineString)('FROM_EMAIL', { default: 'noreply@example.com' });
-const adminEmail = (0, params_1.defineString)('ADMIN_EMAIL', { default: 'admin@example.com' });
+// TEMPORARY: Force the correct API key for testing
+const BREVO_KEY = "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";
+const FROM_EMAIL = process.env.FROM_EMAIL || 'albertomtferreira@gmail.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '936095002@smtp-brevo.com';
 /**
  * Sends an email using the Brevo (Sendinblue) API.
  */
 async function sendEmail(mailOptions) {
-    const SIB_API_KEY = brevoApiKey.value();
-    const FROM_EMAIL = fromEmail.value();
-    if (!SIB_API_KEY) {
-        logger.error('Brevo API key is not configured. Email not sent.');
-        return;
+    if (!BREVO_KEY) {
+        logger.error('❌ CRITICAL: Brevo API key is not configured.');
+        throw new Error('Brevo API key is missing');
     }
-    const defaultClient = Brevo.ApiClient.instance;
-    const apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = SIB_API_KEY;
-    const apiInstance = new Brevo.TransactionalEmailsApi();
-    const sendSmtpEmail = new Brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = mailOptions.subject;
-    sendSmtpEmail.htmlContent = mailOptions.html;
-    sendSmtpEmail.sender = { name: 'bread mate', email: FROM_EMAIL };
-    sendSmtpEmail.to = [{ email: mailOptions.to }];
-    sendSmtpEmail.textContent = mailOptions.text;
+    if (!FROM_EMAIL) {
+        logger.error('❌ CRITICAL: FROM_EMAIL is not configured.');
+        throw new Error('FROM_EMAIL is missing');
+    }
     try {
-        await apiInstance.sendTransacEmail(sendSmtpEmail);
-        logger.info(`Email sent successfully to ${mailOptions.to}`);
+        const defaultClient = Brevo.ApiClient.instance;
+        const apiKey = defaultClient.authentications['api-key'];
+        apiKey.apiKey = BREVO_KEY;
+        const apiInstance = new Brevo.TransactionalEmailsApi();
+        const sendSmtpEmail = new Brevo.SendSmtpEmail();
+        sendSmtpEmail.subject = mailOptions.subject;
+        sendSmtpEmail.htmlContent = mailOptions.html;
+        sendSmtpEmail.sender = { name: 'bread mate', email: FROM_EMAIL };
+        sendSmtpEmail.to = [{ email: mailOptions.to }];
+        sendSmtpEmail.textContent = mailOptions.text;
+        const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        return result;
     }
     catch (error) {
-        logger.error('Error sending email via Brevo:', error);
+        logger.error('❌ ERROR:', {
+            errorMessage: error.message,
+            errorCode: error.code,
+            errorStatus: error.status,
+            fullError: JSON.stringify(error, Object.getOwnPropertyNames(error), 2)
+        });
+        throw error;
+    }
+    finally {
+        logger.info('=== API KEY DEBUGGING END ===');
     }
 }
 async function sendNewOrderEmails(order) {
@@ -62,25 +72,27 @@ async function sendNewOrderEmails(order) {
     };
     await sendEmail(customerMail);
     // 2. Send notification email to the admin
-    const adminMail = {
-        to: adminEmail.value(),
-        subject: `New Order Received: #${order.orderId.substring(0, 7)}`,
-        text: `A new order has been placed by ${order.customerName} (${order.customerEmail}).\n\nOrder ID: ${order.orderId}\nTotal: £${order.total.toFixed(2)}\n\nPlease check the admin dashboard to view the order details.`,
-        html: `
-      <h2>New Order Received!</h2>
-      <p>A new order has been placed.</p>
-      <p><strong>Order ID:</strong> ${order.orderId}</p>
-      <p><strong>Customer:</strong> ${order.customerName} (${order.customerEmail})</p>
-      <p><strong>Total:</strong> £${order.total.toFixed(2)}</p>
-      <hr>
-      <ul>
-        ${order.items.map(item => `<li>${item.quantity}x ${item.name}</li>`).join('')}
-      </ul>
-      <hr>
-      <p>Please check the admin dashboard to view and process the order.</p>
-    `,
-    };
-    await sendEmail(adminMail);
+    if (ADMIN_EMAIL) {
+        const adminMail = {
+            to: ADMIN_EMAIL,
+            subject: `New Order Received: #${order.orderId.substring(0, 7)}`,
+            text: `A new order has been placed by ${order.customerName} (${order.customerEmail}).\n\nOrder ID: ${order.orderId}\nTotal: £${order.total.toFixed(2)}\n\nPlease check the admin dashboard to view the order details.`,
+            html: `
+        <h2>New Order Received!</h2>
+        <p>A new order has been placed.</p>
+        <p><strong>Order ID:</strong> ${order.orderId}</p>
+        <p><strong>Customer:</strong> ${order.customerName} (${order.customerEmail})</p>
+        <p><strong>Total:</strong> £${order.total.toFixed(2)}</p>
+        <hr>
+        <ul>
+          ${order.items.map(item => `<li>${item.quantity}x ${item.name}</li>`).join('')}
+        </ul>
+        <hr>
+        <p>Please check the admin dashboard to view and process the order.</p>
+      `,
+        };
+        await sendEmail(adminMail);
+    }
 }
 async function sendStatusUpdateEmail(update) {
     const { orderId, customerEmail, status } = update;
@@ -112,8 +124,12 @@ async function sendStatusUpdateEmail(update) {
     await sendEmail(mail);
 }
 async function sendNewContactEmailToAdmin(contact) {
+    if (!ADMIN_EMAIL) {
+        logger.error('❌ ADMIN_EMAIL not configured, skipping contact form email');
+        return;
+    }
     const adminMail = {
-        to: adminEmail.value(),
+        to: ADMIN_EMAIL,
         subject: `New Message from ${contact.name} via Contact Form`,
         text: `You have received a new message from your website contact form.\n\nName: ${contact.name}\nEmail: ${contact.email}\nMessage:\n${contact.message}`,
         html: `
