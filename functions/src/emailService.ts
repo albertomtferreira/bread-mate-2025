@@ -47,6 +47,9 @@ async function sendEmail(mailOptions: { to: string; subject: string; text: strin
       return;
   }
   
+  // Securely log a portion of the key for verification
+  logger.info(`Using Brevo API Key starting with "${SIB_API_KEY.substring(0, 4)}" and ending with "${SIB_API_KEY.slice(-4)}"`);
+
   const defaultClient = Brevo.ApiClient.instance;
   const apiKey = defaultClient.authentications['api-key'];
   apiKey.apiKey = SIB_API_KEY;
