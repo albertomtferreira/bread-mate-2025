@@ -1,3 +1,5 @@
+'use server';
+
 import * as logger from 'firebase-functions/logger';
 import { defineString } from 'firebase-functions/params';
 const Brevo = require('sib-api-v3-sdk');

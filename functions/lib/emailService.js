@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNewContactEmailToAdmin = exports.sendStatusUpdateEmail = exports.sendNewOrderEmails = void 0;
 const logger = require("firebase-functions/logger");
 const params_1 = require("firebase-functions/params");
-const Brevo = require("sib-api-v3-sdk");
+const Brevo = require('sib-api-v3-sdk');
 // Define environment variables for configuration
 const brevoApiKey = (0, params_1.defineString)('BREVO_KEY');
 const fromEmail = (0, params_1.defineString)('FROM_EMAIL', { default: 'noreply@example.com' });
