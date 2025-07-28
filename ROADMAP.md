@@ -59,7 +59,7 @@ This document tracks the features and progress for the Flourish & Dough applicat
 - [ ] **reCAPTCHA (M):** Add reCAPTCHA to the contact form to prevent spam.
 
 ### 3.2. Product & Store Enhancements
-- [ ] **Interactive Add to Cart (S):** When an item is added to the cart, the "Add to Basket" button on the product card should transform into a quantity stepper (`- 1 +`).
+- [x] **Interactive Add to Cart (S):** When an item is added to the cart, the "Add to Basket" button on the product card should transform into a quantity stepper (`- 1 +`).
 - [ ] **Nutritional Information (M):** Add fields for nutritional details (calories, fat, etc.) to products and display them.
 - [ ] **Favorite Items (L):** Allow logged-in users to "favorite" products for easy access later.
 
@@ -67,6 +67,7 @@ This document tracks the features and progress for the Flourish & Dough applicat
 - [ ] **AI-Powered Product Descriptions (M):** Build a tool for admins to generate product descriptions using AI by providing simple keywords.
 - [ ] **AI Bread Recommender (L):** A tool for customers to get product recommendations based on natural language queries.
 - [ ] **AI Contact Form Analysis (L):** Automatically categorize and prioritize incoming contact messages using AI.
+
 
 
 
