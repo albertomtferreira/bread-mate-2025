@@ -38,9 +38,11 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          <PromotionalBanner />
           <Header />
-          <main className="flex flex-1 flex-col">{children}</main>
+          <main className="flex flex-1 flex-col">
+            <PromotionalBanner />
+            {children}
+          </main>
           <Footer />
           <Toaster />
         </Providers>
