@@ -1,4 +1,17 @@
+'use client';
+
 import { Timestamp } from 'firebase/firestore';
+
+export interface NutritionalInfo {
+  energy?: number;
+  fat?: number;
+  saturates?: number;
+  carbohydrates?: number;
+  sugars?: number;
+  fibre?: number;
+  protein?: number;
+  salt?: number;
+}
 
 export interface Product {
   id: string;
@@ -10,6 +23,8 @@ export interface Product {
   hint: string;
   allergens?: string[];
   isAvailable: boolean;
+  ingredients?: string;
+  nutritionalInfo?: NutritionalInfo;
 }
 
 export interface CartItem extends Product {

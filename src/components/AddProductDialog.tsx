@@ -63,6 +63,16 @@ const productSchema = z.object({
   allergens: z.array(z.string()).optional(),
   otherAllergen: z.string().optional(),
   hasOtherAllergen: z.boolean().default(false),
+  // Nutritional Info
+  ingredients: z.string().optional(),
+  energy: z.coerce.number().nonnegative().optional(),
+  fat: z.coerce.number().nonnegative().optional(),
+  saturates: z.coerce.number().nonnegative().optional(),
+  carbohydrates: z.coerce.number().nonnegative().optional(),
+  sugars: z.coerce.number().nonnegative().optional(),
+  fibre: z.coerce.number().nonnegative().optional(),
+  protein: z.coerce.number().nonnegative().optional(),
+  salt: z.coerce.number().nonnegative().optional(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -91,6 +101,15 @@ export function AddProductDialog({ onProductAdded }: AddProductDialogProps) {
       allergens: [],
       otherAllergen: '',
       hasOtherAllergen: false,
+      ingredients: '',
+      energy: 0,
+      fat: 0,
+      saturates: 0,
+      carbohydrates: 0,
+      sugars: 0,
+      fibre: 0,
+      protein: 0,
+      salt: 0,
     },
   });
   
@@ -146,6 +165,17 @@ export function AddProductDialog({ onProductAdded }: AddProductDialogProps) {
         image: imageUrl,
         isAvailable: values.isAvailable,
         allergens: finalAllergens,
+        ingredients: values.ingredients,
+        nutritionalInfo: {
+            energy: values.energy,
+            fat: values.fat,
+            saturates: values.saturates,
+            carbohydrates: values.carbohydrates,
+            sugars: values.sugars,
+            fibre: values.fibre,
+            protein: values.protein,
+            salt: values.salt
+        },
         createdAt: new Date().toISOString(),
       });
 
@@ -301,6 +331,9 @@ export function AddProductDialog({ onProductAdded }: AddProductDialogProps) {
                 )}
               />
             <Separator />
+            <div>
+                <h3 className="text-lg font-semibold mb-2">Allergens & Ingredients</h3>
+            </div>
             <FormField
                 control={form.control}
                 name="allergens"
@@ -378,6 +411,90 @@ export function AddProductDialog({ onProductAdded }: AddProductDialogProps) {
                     )}
                 />
             )}
+
+            <FormField
+              control={form.control}
+              name="ingredients"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ingredients</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="List all ingredients, separated by commas..."
+                      className="resize-y"
+                      {...field}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Separator />
+            <div>
+                 <h3 className="text-lg font-semibold mb-2">Nutritional Information</h3>
+                 <p className="text-sm text-muted-foreground">Enter values per 100g.</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                 <FormField control={form.control} name="energy" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Energy (kcal)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="fat" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Fat (g)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="saturates" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Saturates (g)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="carbohydrates" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Carbs (g)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="sugars" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Sugars (g)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="fibre" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Fibre (g)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="protein" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Protein (g)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="salt" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Salt (g)</FormLabel>
+                        <FormControl><Input type="number" step="any" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+            </div>
+
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline" disabled={isSubmitting}>
