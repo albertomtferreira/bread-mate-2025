@@ -62,7 +62,7 @@ This document tracks the features and progress for the Flourish & Dough applicat
 - [x] **Nutritional Information (M):** Add fields for nutritional details (calories, fat, etc.) to products and display them.
 - [x] **Favorite Items (L):** Allow logged-in users to "favorite" products for easy access later.
 - [x] **Account Page Layout (S):** Improve the account page layout by moving the Order History section to the bottom for better visibility of user details.
-- [ ] **Admin Product Favorites (M):** Display a count of how many users have favorited each item on the product management page in the admin dashboard.
+- [ ] **Admin Product Favorites (XL):** Display a count of how many users have favorited each item on the product management page in the admin dashboard. (Note: To be implemented via a Cloud Function that updates a `favoriteCount` field on each product for scalability).
 - [ ] **Favorites in Analytics (L):** Incorporate product favorite data into the Analytics dashboard to track popular items.
 
 ### 3.3. AI-Powered Features
