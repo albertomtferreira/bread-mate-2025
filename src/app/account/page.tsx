@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -29,6 +28,7 @@ import {
   MailWarning,
   ExternalLink,
   Heart,
+  History,
 } from 'lucide-react';
 import { collection, doc, getDoc, getDocs, query, where, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -47,6 +47,8 @@ import {
 } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { AddToCartButton } from '@/components/AddToCartButton';
+import { ProductDetailDialog } from '@/components/ProductDetailDialog';
 
 
 type UserDetails = UserDetailsForm & {
@@ -56,6 +58,10 @@ type UserDetails = UserDetailsForm & {
   deliveryPostcode?: string;
   favorites?: string[];
 };
+
+type FavoriteProductInfo = Product & {
+    lastPurchased: Date | null;
+}
 
 const AddressDisplay = ({
   title,
@@ -100,7 +106,7 @@ export default function AccountPage() {
   const router = useRouter();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<FavoriteProductInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -110,34 +116,49 @@ export default function AccountPage() {
       const fetchAccountData = async () => {
         setLoading(true);
         try {
-          // Fetch user details
+          // Fetch user details and orders in parallel
           const userDocRef = doc(db, 'users', user.uid);
-          const docSnap = await getDoc(userDocRef);
+          const userDocPromise = getDoc(userDocRef);
+          
+          const ordersRef = collection(db, 'orders');
+          const q = query(ordersRef, where('userId', '==', user.uid));
+          const ordersPromise = getDocs(q);
+
+          const [docSnap, querySnapshot] = await Promise.all([userDocPromise, ordersPromise]);
+          
+          const userOrders = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+          userOrders.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+          setOrders(userOrders);
+
           if (docSnap.exists()) {
              const details = docSnap.data() as UserDetails;
-            setUserDetails(details);
+             setUserDetails(details);
 
              // Fetch favorite products if there are any
             if (details.favorites && details.favorites.length > 0) {
                 const productsRef = collection(db, 'products');
                 const favQuery = query(productsRef, where(documentId(), 'in', details.favorites));
                 const favSnapshot = await getDocs(favQuery);
-                const favs = favSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-                setFavoriteProducts(favs);
+                
+                const favsWithDates = favSnapshot.docs.map(doc => {
+                    const product = { id: doc.id, ...doc.data() } as Product;
+                    let lastPurchased: Date | null = null;
+                    
+                    // Find the most recent order containing this product
+                    for (const order of userOrders) {
+                        if (order.items.some(item => item.id === product.id)) {
+                            lastPurchased = order.createdAt.toDate();
+                            break; // Since orders are sorted descending, the first match is the latest
+                        }
+                    }
+                    return { ...product, lastPurchased };
+                });
+                
+                setFavoriteProducts(favsWithDates);
             } else {
               setFavoriteProducts([]);
             }
           }
-
-          // Fetch user orders
-          const ordersRef = collection(db, 'orders');
-          const q = query(ordersRef, where('userId', '==', user.uid));
-          const querySnapshot = await getDocs(q);
-          
-          const userOrders = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-          
-          userOrders.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-          setOrders(userOrders);
 
         } catch (error) {
             console.error("Failed to fetch account data:", error);
@@ -265,7 +286,7 @@ export default function AccountPage() {
 
         <div className="space-y-12">
             <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-                <div className="space-y-8">
+                <div className="space-y-8 lg:col-span-1">
                     <Card>
                         <CardHeader>
                         <CardTitle className="font-headline flex items-center gap-2">
@@ -331,8 +352,8 @@ export default function AccountPage() {
                     </Card>
                 </div>
 
-                <div className="lg:col-span-2 space-y-8">
-                    <Card>
+                 <div className="lg:col-span-2 space-y-8">
+                     <Card>
                         <CardHeader>
                         <CardTitle className="font-headline flex items-center gap-2">
                             <Home /> Your Addresses
@@ -360,36 +381,51 @@ export default function AccountPage() {
                             />
                         </CardFooter>
                     </Card>
-                     <Card>
-                        <CardHeader>
-                            <CardTitle className="font-headline flex items-center gap-2">
-                                <Heart /> My Favorites
-                            </CardTitle>
-                            <CardDescription>
-                                Your saved items for quick access.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {favoriteProducts.length > 0 ? (
-                                <div className="space-y-4">
-                                {favoriteProducts.map(product => (
-                                    <div key={product.id} className="flex items-center gap-4">
-                                        <Image src={product.image} alt={product.name} width={64} height={64} className="rounded-md object-cover" />
-                                        <div className="flex-grow">
-                                            <h4 className="font-semibold">{product.name}</h4>
-                                            <p className="text-sm text-muted-foreground">£{product.price.toFixed(2)}</p>
-                                        </div>
-                                        <FavoriteButton product={product} />
-                                    </div>
-                                ))}
-                                </div>
-                            ) : (
-                                <p className="text-muted-foreground text-center py-8">You haven't favorited any items yet.</p>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+                 </div>
             </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                        <Heart /> My Favorites
+                    </CardTitle>
+                    <CardDescription>
+                        Your saved items for quick access and re-ordering.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {favoriteProducts.length > 0 ? (
+                        <div className="space-y-4">
+                        {favoriteProducts.map(product => (
+                            <div key={product.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 border-b pb-4 last:border-b-0 last:pb-0">
+                                 <ProductDetailDialog product={product}>
+                                    <div className="flex items-center gap-4 cursor-pointer group">
+                                         <Image src={product.image} alt={product.name} width={80} height={80} className="rounded-md object-cover" />
+                                        <div className="flex-grow">
+                                            <h4 className="font-semibold group-hover:underline">{product.name}</h4>
+                                            <p className="text-sm text-muted-foreground">£{product.price.toFixed(2)}</p>
+                                            {product.lastPurchased && (
+                                                <p className="text-xs text-muted-foreground italic flex items-center gap-1 mt-1">
+                                                    <History className="h-3 w-3" />
+                                                    Last purchased: {formatDistanceToNow(product.lastPurchased, { addSuffix: true })}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                 </ProductDetailDialog>
+                                
+                                <div className="flex items-center gap-2 sm:ml-auto w-full sm:w-auto">
+                                    <AddToCartButton product={product} />
+                                    <FavoriteButton product={product} />
+                                </div>
+                            </div>
+                        ))}
+                        </div>
+                    ) : (
+                        <p className="text-muted-foreground text-center py-8">You haven't favorited any items yet.</p>
+                    )}
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader>
@@ -445,5 +481,3 @@ export default function AccountPage() {
     </div>
   );
 }
-
-    
