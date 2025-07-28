@@ -60,7 +60,7 @@ This document tracks the features and progress for the Flourish & Dough applicat
 ### 3.2. Product & Store Enhancements
 - [x] **Interactive Add to Cart (S):** When an item is added to the cart, the "Add to Basket" button on the product card should transform into a quantity stepper (`- 1 +`).
 - [x] **Nutritional Information (M):** Add fields for nutritional details (calories, fat, etc.) to products and display them.
-- [ ] **Favorite Items (L):** Allow logged-in users to "favorite" products for easy access later.
+- [x] **Favorite Items (L):** Allow logged-in users to "favorite" products for easy access later.
 
 ### 3.3. AI-Powered Features
 - [ ] **AI-Powered Product Descriptions (M):** Build a tool for admins to generate product descriptions using AI by providing simple keywords.

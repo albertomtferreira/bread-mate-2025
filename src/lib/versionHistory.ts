@@ -8,6 +8,15 @@ export interface Version {
 
 export const versionHistory: Version[] = [
   {
+    version: 'v1.7',
+    date: '29-07-2025',
+    changes: [
+      'Implemented "Favorite Items" feature for logged-in users.',
+      'Added a favorites section to the user account page.',
+      'Guests are prompted to sign in to use the feature.',
+    ],
+  },
+  {
     version: 'v1.6',
     date: '28-07-2025',
     changes: [

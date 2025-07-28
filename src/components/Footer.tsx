@@ -32,7 +32,7 @@ export function Footer({ className }: { className?: string }) {
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
       <VersionHistoryDialog>
             <Button variant="link" className="text-muted-foreground font-semibold">
-                v1.6
+                v1.7
             </Button>
         </VersionHistoryDialog>
         
