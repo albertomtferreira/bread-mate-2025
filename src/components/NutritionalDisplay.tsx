@@ -63,19 +63,19 @@ const NutrientItem = ({
        color !== 'bg-white' && 'text-white'
     )}
   >
-    <div className={cn('py-1 px-2 flex-grow flex flex-col justify-center', color)}>
-      <div className="text-xs font-bold">{title}</div>
-      <div className="text-xl font-extrabold -my-1">
+    <div className={cn('p-1 flex-grow flex flex-col justify-center', color)}>
+      <div className="text-[10px] font-bold leading-tight">{title}</div>
+      <div className="text-base font-extrabold -my-0.5">
         {value}
-        <span className="font-bold text-sm">{unit}</span>
+        <span className="font-bold text-xs">{unit}</span>
       </div>
       {level && (
-        <div className="text-xs bg-white text-black font-bold rounded-full px-2 py-0.5 inline-block my-0.5 self-center">
+        <div className="text-[10px] leading-tight bg-white text-black font-bold rounded-full px-1 py-0 inline-block my-0.5 self-center">
           {level}
         </div>
       )}
     </div>
-    <div className="bg-white py-1 text-black">
+    <div className="bg-white py-0.5 text-black text-xs">
       <span className="font-bold">{riPercent}%</span>
     </div>
   </div>
@@ -93,12 +93,12 @@ const EnergyItem = ({
 
   return (
     <div className="flex flex-col flex-1 text-center border-r border-gray-400">
-      <div className="py-1 px-2 bg-white flex-grow flex flex-col justify-center">
-        <div className="text-xs font-bold">Energy</div>
-        <div className="text-sm font-bold leading-tight">{kJ}kJ</div>
-        <div className="text-sm font-bold leading-tight">{Math.round(kcal)}kcal</div>
+      <div className="p-1 bg-white flex-grow flex flex-col justify-center">
+        <div className="text-[10px] font-bold leading-tight">Energy</div>
+        <div className="text-xs font-bold leading-tight">{kJ}kJ</div>
+        <div className="text-xs font-bold leading-tight">{Math.round(kcal)}kcal</div>
       </div>
-      <div className="bg-white py-1">
+      <div className="bg-white py-0.5 text-xs">
         <span className="font-bold">{riPercent}%</span>
       </div>
     </div>
@@ -130,8 +130,8 @@ export function NutritionalDisplay({
   return (
     <NutritionalInfoDialog nutritionalInfo={nutritionalInfo} ingredients={ingredients} productName={productName}>
         <div className="mt-4 p-0 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors">
-            <h4 className="text-sm font-semibold mb-2 text-center text-muted-foreground pt-2">Nutrition per 100g</h4>
-            <div className="flex justify-center border-2 border-gray-400 overflow-hidden rounded-xl mx-2">
+            <h4 className="text-xs font-semibold mb-1 text-center text-muted-foreground pt-1">Nutrition per 100g</h4>
+            <div className="flex justify-center border-2 border-gray-400 overflow-hidden rounded-lg mx-2">
                <EnergyItem 
                     kcal={energy}
                     riPercent={calculateRI(energy * 4.184, ri.energy)}
@@ -169,7 +169,7 @@ export function NutritionalDisplay({
                     level={saltInfo.label}
                 />
             </div>
-            <p className="text-xs text-center text-muted-foreground mt-2 pb-2">of an adult's reference intake</p>
+            <p className="text-[10px] text-center text-muted-foreground mt-1 pb-1">of an adult's reference intake</p>
         </div>
     </NutritionalInfoDialog>
   );
