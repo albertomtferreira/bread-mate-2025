@@ -26,7 +26,7 @@ export function ProductDetailDialog({ children, product }: ProductDetailDialogPr
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[90vh]">
         <DialogHeader>
           <div className="relative h-64 w-full mb-4">
              <Image src={product.image} alt={product.alt} fill className="object-cover rounded-lg" />
