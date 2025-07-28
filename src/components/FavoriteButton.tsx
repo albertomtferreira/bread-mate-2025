@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -34,6 +34,7 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent any parent link navigation
     e.stopPropagation(); // Stop event bubbling
+    setIsTooltipOpen(false); // Close tooltip on click
 
     if (!user) {
       toast({
@@ -64,8 +65,8 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen} delayDuration={100}>
+    <TooltipProvider delayDuration={100}>
+      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
