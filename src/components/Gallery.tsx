@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData, doc, onSnapshot } from 'firebase/firestore';
 
 interface GalleryImage {
   id: string;
@@ -27,26 +27,21 @@ export default function Gallery() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch dynamic content
-     const fetchContent = async () => {
-        try {
-            const contentRef = doc(db, 'siteContent', 'text');
-            const contentSnap = await getDoc(contentRef);
-            if(contentSnap.exists()) {
-                const data = contentSnap.data();
-                setContent({
-                    title: data.galleryTitle,
-                    description: data.galleryDescription,
-                });
-            }
-        } catch (error) {
-            console.error("Failed to fetch gallery content:", error);
+    // Listen for dynamic content in real-time
+    const contentRef = doc(db, 'siteContent', 'text');
+    const unsubscribeContent = onSnapshot(contentRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            setContent({
+                title: data.galleryTitle,
+                description: data.galleryDescription,
+            });
         }
-    };
-    
-    fetchContent();
+    }, (error) => {
+        console.error("Failed to fetch gallery content in real-time:", error);
+    });
 
-    // Fetch images
+    // Fetch images (can remain a one-time fetch unless you want real-time image additions)
     const fetchGalleryImages = async () => {
       try {
         const galleryCollection = collection(db, 'gallery');
@@ -64,6 +59,10 @@ export default function Gallery() {
     };
 
     fetchGalleryImages();
+
+    return () => {
+      unsubscribeContent();
+    };
   }, []);
 
   if (loading) {

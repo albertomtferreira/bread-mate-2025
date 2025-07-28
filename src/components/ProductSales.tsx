@@ -14,7 +14,7 @@ import {
 import { AddToCartButton } from './AddToCartButton';
 import type { Product } from '@/types';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc } from 'firebase/firestore';
 import { AllergenIcon } from './AllergenIcon';
 import { NutritionalDisplay } from './NutritionalDisplay';
 import { ProductDetailSheet } from './ProductDetailDialog';
@@ -88,30 +88,25 @@ export default function ProductSales() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch dynamic content
-    const fetchContent = async () => {
-        try {
-            const contentRef = doc(db, 'siteContent', 'text');
-            const contentSnap = await getDoc(contentRef);
-            if(contentSnap.exists()) {
-                const data = contentSnap.data();
-                setContent({
-                    title: data.productSalesTitle,
-                    description: data.productSalesDescription,
-                });
-            }
-        } catch (error) {
-            console.error("Failed to fetch product sales content:", error);
-        }
-    };
-    
-    fetchContent();
+    // Listen for dynamic content in real-time
+    const contentRef = doc(db, 'siteContent', 'text');
+    const unsubscribeContent = onSnapshot(contentRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setContent({
+          title: data.productSalesTitle,
+          description: data.productSalesDescription,
+        });
+      }
+    }, (error) => {
+      console.error("Failed to fetch product sales content in real-time:", error);
+    });
 
-    // Fetch products
+    // Listen for products in real-time
     const productsCollection = collection(db, 'products');
     const q = query(productsCollection, where("isAvailable", "==", true));
     
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const unsubscribeProducts = onSnapshot(q, (querySnapshot) => {
       const productList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setProducts(productList);
       setLoading(false);
@@ -120,7 +115,10 @@ export default function ProductSales() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeContent();
+      unsubscribeProducts();
+    };
   }, []);
 
   if (loading) {
