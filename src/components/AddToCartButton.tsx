@@ -43,18 +43,20 @@ export function AddToCartButton({ product }: { product: Product }) {
 
   if (isInCart) {
     return (
-      <div className="flex items-center justify-between w-full">
+      <div className="flex items-center justify-between gap-4">
         <Button
           variant="outline"
           size="icon"
+          className="h-10 w-10"
           onClick={() => updateQuantity(product.id, quantity - 1)}
         >
           <Minus />
         </Button>
-        <span className="text-lg font-bold">{quantity} in basket</span>
+        <span className="text-lg font-bold text-center w-28">{quantity} in basket</span>
         <Button
           variant="outline"
           size="icon"
+          className="h-10 w-10"
           onClick={() => updateQuantity(product.id, quantity + 1)}
         >
           <Plus />
@@ -65,7 +67,7 @@ export function AddToCartButton({ product }: { product: Product }) {
 
   return (
     <Button
-      className="w-full bg-accent hover:bg-accent/90"
+      className="bg-accent hover:bg-accent/90"
       onClick={handleAddToCart}
     >
       <ShoppingCart className="mr-2 h-4 w-4" />

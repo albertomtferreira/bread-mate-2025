@@ -37,7 +37,7 @@ const ProductCard = ({ product }: { product: Product }) => {
       <CardContent className="flex-grow">
         <p className="text-2xl font-bold text-primary">£{product.price.toFixed(2)}</p>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="justify-center">
         <AddToCartButton product={product} />
       </CardFooter>
     </Card>
