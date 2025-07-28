@@ -16,6 +16,35 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { AllergenIcon } from './AllergenIcon';
 
+const ProductCard = ({ product }: { product: Product }) => {
+  return (
+    <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:-translate-y-2">
+      <div className="relative h-64 w-full">
+        <Image src={product.image} alt={product.alt} data-ai-hint={product.hint} fill className="object-cover" />
+      </div>
+      <CardHeader>
+        <CardTitle className="font-headline">{product.name}</CardTitle>
+        <CardDescription className="pt-2">{product.description}</CardDescription>
+        {product.allergens && Array.isArray(product.allergens) && product.allergens.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <span className="text-sm font-semibold">Allergens:</span>
+            {product.allergens.map(allergen => (
+              <AllergenIcon key={allergen} allergen={allergen} />
+            ))}
+          </div>
+        )}
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <p className="text-2xl font-bold text-primary">£{product.price.toFixed(2)}</p>
+      </CardContent>
+      <CardFooter>
+        <AddToCartButton product={product} />
+      </CardFooter>
+    </Card>
+  );
+};
+
+
 export default function ProductSales() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +53,6 @@ export default function ProductSales() {
     const productsCollection = collection(db, 'products');
     const q = query(productsCollection, where("isAvailable", "==", true));
     
-    // onSnapshot returns an unsubscribe function that we can use for cleanup
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const productList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
       setProducts(productList);
@@ -34,7 +62,6 @@ export default function ProductSales() {
       setLoading(false);
     });
 
-    // Cleanup subscription on component unmount
     return () => unsubscribe();
   }, []);
 
@@ -81,29 +108,7 @@ export default function ProductSales() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
-            <Card key={product.id} className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:-translate-y-2">
-              <div className="relative h-64 w-full">
-                 <Image src={product.image} alt={product.alt} data-ai-hint={product.hint} fill className="object-cover" />
-              </div>
-              <CardHeader>
-                <CardTitle className="font-headline">{product.name}</CardTitle>
-                <CardDescription className="pt-2">{product.description}</CardDescription>
-                {product.allergens && Array.isArray(product.allergens) && product.allergens.length > 0 && (
-                   <div className="flex flex-wrap items-center gap-2 pt-2">
-                    <span className="text-sm font-semibold">Allergens:</span>
-                     {product.allergens.map(allergen => (
-                      <AllergenIcon key={allergen} allergen={allergen} />
-                    ))}
-                  </div>
-                )}
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-2xl font-bold text-primary">£{product.price.toFixed(2)}</p>
-              </CardContent>
-              <CardFooter>
-                <AddToCartButton product={product} />
-              </CardFooter>
-            </Card>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>
