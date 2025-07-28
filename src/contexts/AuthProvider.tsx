@@ -29,6 +29,7 @@ interface User {
   email: string | null;
   isAdmin: boolean;
   emailVerified: boolean;
+  favorites?: string[]; // Array of product IDs
 }
 
 interface AuthContextType {
@@ -43,6 +44,7 @@ interface AuthContextType {
   updateProfile: (profile: { displayName?: string; photoURL?: string }) => Promise<void>;
   sendPasswordResetEmail: (email: string) => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,7 +53,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const formatUser = async (user: FirebaseUser): Promise<User> => {
     const userDocRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
-    const isAdmin = userDoc.exists() && userDoc.data()?.isAdmin === true;
+    const userData = userDoc.data();
+    
+    const isAdmin = userData?.isAdmin === true;
+    const favorites = userData?.favorites || [];
 
     return {
         uid: user.uid,
@@ -59,6 +64,7 @@ const formatUser = async (user: FirebaseUser): Promise<User> => {
         name: user.displayName,
         isAdmin: isAdmin,
         emailVerified: user.emailVerified,
+        favorites: favorites,
     }
 };
 
@@ -101,6 +107,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, [toast]);
   
+  const refreshUser = useCallback(async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+        const appUser = await formatUser(currentUser);
+        setUser(appUser);
+    }
+  }, []);
+
   // This function now correctly handles new vs existing users to avoid permission errors
   const handleAuthSuccess = useCallback(async (firebaseUser: FirebaseUser, name?: string) => {
     let displayName = name || firebaseUser.displayName;
@@ -121,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: serverTimestamp(),
         // isAdmin is false by default. It must be set manually in Firestore for security.
         isAdmin: false, 
+        favorites: [],
       });
     }
     
@@ -248,7 +263,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithEmail, signupWithEmail, signInWithGoogle, logout, updatePassword, reauthenticate, updateProfile, sendPasswordResetEmail, sendVerificationEmail }}>
+    <AuthContext.Provider value={{ user, loading, loginWithEmail, signupWithEmail, signInWithGoogle, logout, updatePassword, reauthenticate, updateProfile, sendPasswordResetEmail, sendVerificationEmail, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

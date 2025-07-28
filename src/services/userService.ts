@@ -1,7 +1,7 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { getCloudFunction } from '@/lib/firebase';
 
 /**
@@ -20,6 +20,31 @@ export const updateUserDetails = async (uid: string, details: any): Promise<void
         await setDoc(userDocRef, details, { merge: true });
     }
 };
+
+/**
+ * Adds or removes a product from a user's favorites list.
+ * @param userId The ID of the user.
+ * @param productId The ID of the product to toggle.
+ * @param isFavorited The current favorite status of the product.
+ */
+export const toggleFavorite = async (userId: string, productId: string, isFavorited: boolean): Promise<void> => {
+    const userRef = doc(db, 'users', userId);
+    try {
+        if (isFavorited) {
+            await updateDoc(userRef, {
+                favorites: arrayRemove(productId)
+            });
+        } else {
+            await updateDoc(userRef, {
+                favorites: arrayUnion(productId)
+            });
+        }
+    } catch (error) {
+        console.error("Error toggling favorite:", error);
+        throw new Error("Could not update your favorites. Please try again.");
+    }
+};
+
 
 const setUserAdminStatusFunction = getCloudFunction('setUserAdminStatus');
 

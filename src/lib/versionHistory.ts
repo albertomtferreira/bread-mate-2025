@@ -9,7 +9,7 @@ export interface Version {
 export const versionHistory: Version[] = [
   {
     version: 'v1.6',
-    date: '2024-07-26',
+    date: '28-07-2025',
     changes: [
       'Added nutritional information display on product cards.',
       'Implemented a detailed nutritional information dialog.',
@@ -19,7 +19,7 @@ export const versionHistory: Version[] = [
   },
   {
     version: 'v1.5',
-    date: '2024-07-25',
+    date: '25-07-2025',
     changes: [
       'Implemented interactive "Add to Cart" button with quantity stepper.',
       'Created a comprehensive project roadmap.',
@@ -28,7 +28,7 @@ export const versionHistory: Version[] = [
   },
   {
     version: 'v1.0',
-    date: '2024-07-24',
+    date: '24-07-2025',
     changes: [
       'Initial release with core e-commerce functionality.',
       'User authentication (Email/Password, Google Sign-In).',
