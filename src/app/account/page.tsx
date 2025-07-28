@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -262,8 +263,134 @@ export default function AccountPage() {
             </Alert>
         )}
 
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-12">
+            <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
+                <div className="space-y-8">
+                    <Card>
+                        <CardHeader>
+                        <CardTitle className="font-headline flex items-center gap-2">
+                            <User /> Account Information
+                        </CardTitle>
+                        <CardDescription>Your personal information.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+                            <div className="space-y-1">
+                            <Label>Name</Label>
+                            <TooltipProvider>
+                                <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <p className="text-muted-foreground truncate">{user.name}</p>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{user.name}</p>
+                                </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            </div>
+                            <div className="space-y-1">
+                            <Label>Email</Label>
+                            <TooltipProvider>
+                                <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <p className="text-muted-foreground truncate">{user.email}</p>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{user.email}</p>
+                                </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            </div>
+                            <div className="space-y-1 col-span-1 sm:col-span-2">
+                            <Label>Contact Number</Label>
+                            <p className="text-muted-foreground">{userDetails?.contactNumber || 'Not provided'}</p>
+                            </div>
+                        </div>
+                        <Separator />
+                            <div>
+                            <Label>Communication Preferences</Label>
+                            <div className="mt-2 space-y-2">
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    {userDetails?.emailComms ? <CheckCircle2 className="text-green-600" /> : <XCircle className="text-destructive" />}
+                                    <span>Email Marketing</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    {userDetails?.textComms ? <CheckCircle2 className="text-green-600" /> : <XCircle className="text-destructive" />}
+                                    <span>SMS Marketing</span>
+                                </div>
+                            </div>
+                            </div>
+
+                        </CardContent>
+                        <CardFooter className="flex justify-end">
+                            <UpdateAccountDialog
+                            currentUserDetails={userDetails}
+                            onAccountUpdate={handleDetailsUpdate}
+                            />
+                        </CardFooter>
+                    </Card>
+                </div>
+
+                <div className="lg:col-span-2 space-y-8">
+                    <Card>
+                        <CardHeader>
+                        <CardTitle className="font-headline flex items-center gap-2">
+                            <Home /> Your Addresses
+                        </CardTitle>
+                        <CardDescription>
+                            Your billing and primary delivery addresses.
+                        </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                        <AddressDisplay
+                            title="Billing Address"
+                            address={userDetails ?? {}}
+                        />
+                        {hasDeliveryAddress && (
+                            <AddressDisplay
+                                title="Delivery Address"
+                                address={deliveryAddress}
+                            />
+                        )}
+                        </CardContent>
+                        <CardFooter className="flex justify-end">
+                            <ManageAddressDialog
+                                currentUserDetails={userDetails}
+                                onAddressUpdate={handleDetailsUpdate}
+                            />
+                        </CardFooter>
+                    </Card>
+                     <Card>
+                        <CardHeader>
+                            <CardTitle className="font-headline flex items-center gap-2">
+                                <Heart /> My Favorites
+                            </CardTitle>
+                            <CardDescription>
+                                Your saved items for quick access.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {favoriteProducts.length > 0 ? (
+                                <div className="space-y-4">
+                                {favoriteProducts.map(product => (
+                                    <div key={product.id} className="flex items-center gap-4">
+                                        <Image src={product.image} alt={product.name} width={64} height={64} className="rounded-md object-cover" />
+                                        <div className="flex-grow">
+                                            <h4 className="font-semibold">{product.name}</h4>
+                                            <p className="text-sm text-muted-foreground">£{product.price.toFixed(2)}</p>
+                                        </div>
+                                        <FavoriteButton product={product} />
+                                    </div>
+                                ))}
+                                </div>
+                            ) : (
+                                <p className="text-muted-foreground text-center py-8">You haven't favorited any items yet.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
             <Card>
                 <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2">
@@ -313,133 +440,10 @@ export default function AccountPage() {
                 </div>
                 </CardContent>
             </Card>
-            
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline flex items-center gap-2">
-                        <Heart /> My Favorites
-                    </CardTitle>
-                    <CardDescription>
-                        Your saved items for quick access.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {favoriteProducts.length > 0 ? (
-                        <div className="space-y-4">
-                        {favoriteProducts.map(product => (
-                            <div key={product.id} className="flex items-center gap-4">
-                                <Image src={product.image} alt={product.name} width={64} height={64} className="rounded-md object-cover" />
-                                <div className="flex-grow">
-                                    <h4 className="font-semibold">{product.name}</h4>
-                                    <p className="text-sm text-muted-foreground">£{product.price.toFixed(2)}</p>
-                                </div>
-                                <FavoriteButton product={product} />
-                            </div>
-                        ))}
-                        </div>
-                    ) : (
-                         <p className="text-muted-foreground text-center py-8">You haven't favorited any items yet.</p>
-                    )}
-                </CardContent>
-            </Card>
-
-            </div>
-
-            <div className="space-y-8">
-            <Card>
-                <CardHeader>
-                <CardTitle className="font-headline flex items-center gap-2">
-                    <Home /> Your Addresses
-                </CardTitle>
-                <CardDescription>
-                    Your billing and primary delivery addresses.
-                </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                <AddressDisplay
-                    title="Billing Address"
-                    address={userDetails ?? {}}
-                />
-                {hasDeliveryAddress && (
-                    <AddressDisplay
-                        title="Delivery Address"
-                        address={deliveryAddress}
-                    />
-                )}
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                    <ManageAddressDialog
-                        currentUserDetails={userDetails}
-                        onAddressUpdate={handleDetailsUpdate}
-                    />
-                </CardFooter>
-            </Card>
-            <Card>
-                <CardHeader>
-                <CardTitle className="font-headline flex items-center gap-2">
-                    <User /> Account Information
-                </CardTitle>
-                <CardDescription>Your personal information.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
-                    <div className="space-y-1">
-                    <Label>Name</Label>
-                    <TooltipProvider>
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                            <p className="text-muted-foreground truncate">{user.name}</p>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{user.name}</p>
-                        </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    </div>
-                    <div className="space-y-1">
-                    <Label>Email</Label>
-                    <TooltipProvider>
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                            <p className="text-muted-foreground truncate">{user.email}</p>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{user.email}</p>
-                        </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    </div>
-                    <div className="space-y-1 col-span-1 sm:col-span-2">
-                    <Label>Contact Number</Label>
-                    <p className="text-muted-foreground">{userDetails?.contactNumber || 'Not provided'}</p>
-                    </div>
-                </div>
-                <Separator />
-                    <div>
-                    <Label>Communication Preferences</Label>
-                    <div className="mt-2 space-y-2">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            {userDetails?.emailComms ? <CheckCircle2 className="text-green-600" /> : <XCircle className="text-destructive" />}
-                            <span>Email Marketing</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                            {userDetails?.textComms ? <CheckCircle2 className="text-green-600" /> : <XCircle className="text-destructive" />}
-                            <span>SMS Marketing</span>
-                        </div>
-                    </div>
-                    </div>
-
-                </CardContent>
-                <CardFooter className="flex justify-end">
-                    <UpdateAccountDialog
-                    currentUserDetails={userDetails}
-                    onAccountUpdate={handleDetailsUpdate}
-                    />
-                </CardFooter>
-            </Card>
-            </div>
         </div>
         </div>
     </div>
   );
 }
+
+    
