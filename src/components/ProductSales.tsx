@@ -16,13 +16,13 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { AllergenIcon } from './AllergenIcon';
 import { NutritionalDisplay } from './NutritionalDisplay';
-import { ProductDetailDialog } from './ProductDetailDialog';
+import { ProductDetailSheet } from './ProductDetailDialog';
 import { FavoriteButton } from './FavoriteButton';
 
 const ProductCard = ({ product }: { product: Product }) => {
   return (
     <Card className="flex flex-col rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:-translate-y-2">
-      <ProductDetailDialog product={product}>
+      <ProductDetailSheet product={product}>
         <div className="cursor-pointer">
           <div className="relative h-64 w-full">
             <Image
@@ -34,16 +34,16 @@ const ProductCard = ({ product }: { product: Product }) => {
             />
           </div>
         </div>
-      </ProductDetailDialog>
+      </ProductDetailSheet>
       <CardHeader className="flex-grow">
         <div className="flex justify-between items-start gap-4">
-          <ProductDetailDialog product={product}>
+          <ProductDetailSheet product={product}>
             <div className="cursor-pointer flex-grow">
               <CardTitle className="font-headline hover:underline">
                 {product.name}
               </CardTitle>
             </div>
-          </ProductDetailDialog>
+          </ProductDetailSheet>
           <FavoriteButton product={product} />
         </div>
         <CardDescription className="pt-2">{product.description}</CardDescription>

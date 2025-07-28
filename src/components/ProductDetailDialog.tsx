@@ -1,13 +1,13 @@
 'use client';
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import type { Product } from '@/types';
 import Image from 'next/image';
@@ -16,30 +16,30 @@ import { NutritionalDisplay } from './NutritionalDisplay';
 import { AddToCartButton } from './AddToCartButton';
 import { FavoriteButton } from './FavoriteButton';
 
-interface ProductDetailDialogProps {
+interface ProductDetailSheetProps {
   children: React.ReactNode;
   product: Product;
 }
 
 
-export function ProductDetailDialog({ children, product }: ProductDetailDialogProps) {
+export function ProductDetailSheet({ children, product }: ProductDetailSheetProps) {
   return (
-    <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
-        <DialogHeader>
+    <Sheet>
+      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetContent className="sm:max-w-lg flex flex-col">
+        <SheetHeader>
           <div className="relative h-64 w-full mb-4">
              <Image src={product.image} alt={product.alt} fill className="object-cover rounded-lg" />
           </div>
-          <DialogTitle className="font-headline text-2xl">{product.name}</DialogTitle>
+          <SheetTitle className="font-headline text-2xl">{product.name}</SheetTitle>
            <div className="flex items-center justify-between">
             <p className="text-2xl font-bold text-primary">£{product.price.toFixed(2)}</p>
             <FavoriteButton product={product} />
           </div>
-          <DialogDescription className="text-base pt-2">{product.description}</DialogDescription>
-        </DialogHeader>
+          <SheetDescription className="text-base pt-2">{product.description}</SheetDescription>
+        </SheetHeader>
 
-        <div className="space-y-4 py-4 overflow-y-auto pr-2">
+        <div className="space-y-4 py-4 overflow-y-auto pr-2 flex-grow">
           {product.allergens && product.allergens.length > 0 && (
             <div>
               <h4 className="font-semibold mb-2">Allergens</h4>
@@ -78,7 +78,7 @@ export function ProductDetailDialog({ children, product }: ProductDetailDialogPr
             <AddToCartButton product={product} />
         </div>
 
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

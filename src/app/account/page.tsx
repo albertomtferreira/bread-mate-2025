@@ -48,7 +48,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { AddToCartButton } from '@/components/AddToCartButton';
-import { ProductDetailDialog } from '@/components/ProductDetailDialog';
+import { ProductDetailSheet } from '@/components/ProductDetailDialog';
 
 
 type UserDetails = UserDetailsForm & {
@@ -398,7 +398,7 @@ export default function AccountPage() {
                         <div className="space-y-4">
                         {favoriteProducts.map(product => (
                             <div key={product.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 border-b pb-4 last:border-b-0 last:pb-0">
-                                 <ProductDetailDialog product={product}>
+                                 <ProductDetailSheet product={product}>
                                     <div className="flex items-center gap-4 cursor-pointer group">
                                          <Image src={product.image} alt={product.name} width={80} height={80} className="rounded-md object-cover" />
                                         <div className="flex-grow">
@@ -412,7 +412,7 @@ export default function AccountPage() {
                                             )}
                                         </div>
                                     </div>
-                                 </ProductDetailDialog>
+                                 </ProductDetailSheet>
                                 
                                 <div className="flex items-center gap-2 sm:ml-auto w-full sm:w-auto">
                                     <AddToCartButton product={product} />
