@@ -194,6 +194,7 @@ export const updateOrderStatus = onCall(async (request) => {
                 orderId: orderId,
                 customerEmail: order.customerEmail,
                 status: status,
+                trackingDetails: trackingDetails,
             });
             logger.info(`Successfully queued status update email for order ${orderId}.`);
         } else {
