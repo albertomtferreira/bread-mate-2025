@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -142,11 +143,15 @@ export function OrderDetailsDialog({ order, children }: OrderDetailsDialogProps)
                 </div>
                 <div>
                 <h3 className="font-semibold mb-2">Delivery Address</h3>
-                <address className="not-italic text-sm text-muted-foreground">
-                    {order.deliveryAddress.addressLine1} <br />
-                    {order.deliveryAddress.addressLine2 && <>{order.deliveryAddress.addressLine2}<br /></>}
-                    {order.deliveryAddress.city}, {order.deliveryAddress.postcode}
-                </address>
+                {order.deliveryAddress ? (
+                    <address className="not-italic text-sm text-muted-foreground">
+                        {order.deliveryAddress.addressLine1} <br />
+                        {order.deliveryAddress.addressLine2 && <>{order.deliveryAddress.addressLine2}<br /></>}
+                        {order.deliveryAddress.city}, {order.deliveryAddress.postcode}
+                    </address>
+                ) : (
+                    <p className="text-sm text-muted-foreground">Address not available.</p>
+                )}
                 </div>
             </div>
 

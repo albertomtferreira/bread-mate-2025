@@ -7,9 +7,9 @@ exports.sendNewContactEmailToAdmin = sendNewContactEmailToAdmin;
 const logger = require("firebase-functions/logger");
 const Brevo = require('sib-api-v3-sdk');
 // TEMPORARY: Force the correct API key for testing
-const BREVO_KEY = "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";
+const BREVO_KEY = process.env.BREVO_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || 'albertomtferreira@gmail.com';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '936095002@smtp-brevo.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'albertomtferreira@gmail.com';
 /**
  * Sends an email using the Brevo (Sendinblue) API.
  */
