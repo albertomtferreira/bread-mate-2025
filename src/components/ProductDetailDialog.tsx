@@ -26,7 +26,7 @@ export function ProductDetailDialog({ children, product }: ProductDetailDialogPr
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg max-h-[90vh]">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader>
           <div className="relative h-64 w-full mb-4">
              <Image src={product.image} alt={product.alt} fill className="object-cover rounded-lg" />
@@ -39,7 +39,7 @@ export function ProductDetailDialog({ children, product }: ProductDetailDialogPr
           <DialogDescription className="text-base pt-2">{product.description}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 overflow-y-auto pr-2">
           {product.allergens && product.allergens.length > 0 && (
             <div>
               <h4 className="font-semibold mb-2">Allergens</h4>
@@ -73,7 +73,7 @@ export function ProductDetailDialog({ children, product }: ProductDetailDialogPr
                 </div>
             )}
         </div>
-         <Separator />
+         <Separator className="mt-auto" />
         <div className="pt-4 flex justify-center">
             <AddToCartButton product={product} />
         </div>
