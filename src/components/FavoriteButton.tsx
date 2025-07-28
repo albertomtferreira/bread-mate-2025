@@ -27,6 +27,7 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   const isFavorited = user?.favorites?.includes(product.id) ?? false;
 
@@ -64,7 +65,7 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
 
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
