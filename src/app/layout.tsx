@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -5,6 +6,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { Providers } from '@/components/Providers';
+import { PromotionalBanner } from '@/components/PromotionalBanner';
 
 export const metadata: Metadata = {
   title: 'bread mate',
@@ -36,6 +38,7 @@ export default function RootLayout({
         )}
       >
         <Providers>
+          <PromotionalBanner />
           <Header />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />
@@ -45,3 +48,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

@@ -16,12 +16,16 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 const contentSchema = z.object({
   productSalesTitle: z.string().min(1, "Title is required."),
   productSalesDescription: z.string().min(1, "Description is required."),
   galleryTitle: z.string().min(1, "Title is required."),
   galleryDescription: z.string().min(1, "Description is required."),
+  bannerEnabled: z.boolean().default(false),
+  bannerText: z.string().optional(),
+  bannerLink: z.string().optional(),
 });
 
 export type SiteContent = z.infer<typeof contentSchema>;
@@ -38,6 +42,9 @@ export default function ManageContentPage() {
         productSalesDescription: '',
         galleryTitle: '',
         galleryDescription: '',
+        bannerEnabled: false,
+        bannerText: '',
+        bannerLink: '',
     }
   });
 
@@ -117,6 +124,56 @@ export default function ManageContentPage() {
                     </div>
                 ) : (
                     <div className="space-y-8">
+                         {/* Promotional Banner Section */}
+                        <div className="space-y-4 p-4 border rounded-lg">
+                            <h3 className="text-lg font-semibold font-headline">Promotional Banner</h3>
+                            <FormField
+                                control={form.control}
+                                name="bannerEnabled"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Enable Banner</FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                            checked={field.value}
+                                            onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                                />
+                            <FormField
+                                control={form.control}
+                                name="bannerText"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Banner Text</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="e.g., Free delivery on orders over £30!" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="bannerLink"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Banner Link (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="e.g., /order" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+
                         {/* Product Sales Section */}
                         <div className="space-y-4 p-4 border rounded-lg">
                             <h3 className="text-lg font-semibold font-headline">Product Sales Section</h3>
@@ -186,3 +243,5 @@ export default function ManageContentPage() {
     </Form>
   );
 }
+
+    
