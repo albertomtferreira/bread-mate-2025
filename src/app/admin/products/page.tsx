@@ -8,7 +8,7 @@ import { ref, deleteObject } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { Edit, Trash2, ArrowLeft, Heart } from 'lucide-react';
 import Image from 'next/image';
 import type { Product } from '@/types';
 import { AddProductDialog } from '@/components/AddProductDialog';
@@ -18,20 +18,50 @@ import { DeleteConfirmationDialog } from '@/components/DeleteConfirmationDialog'
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
+interface ProductWithFavs extends Product {
+  favoriteCount: number;
+}
+
 export default function ManageProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductWithFavs[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
+      // Fetch products and users in parallel
       const productsCollection = collection(db, 'products');
-      const productSnapshot = await getDocs(productsCollection);
-      const productList = productSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Product));
+      const usersCollection = collection(db, 'users');
+      
+      const [productSnapshot, usersSnapshot] = await Promise.all([
+        getDocs(productsCollection),
+        getDocs(usersCollection)
+      ]);
+
+      // Calculate favorite counts
+      const favoriteCounts = new Map<string, number>();
+      usersSnapshot.docs.forEach(userDoc => {
+        const userData = userDoc.data();
+        if (userData.favorites && Array.isArray(userData.favorites)) {
+          userData.favorites.forEach(productId => {
+            favoriteCounts.set(productId, (favoriteCounts.get(productId) || 0) + 1);
+          });
+        }
+      });
+
+      // Combine product data with favorite counts
+      const productList = productSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => {
+        const product = {
+          id: doc.id,
+          ...doc.data(),
+        } as Product;
+        return {
+          ...product,
+          favoriteCount: favoriteCounts.get(product.id) || 0
+        };
+      });
+
       setProducts(productList);
     } catch (error) {
       console.error("Error fetching products: ", error);
@@ -111,6 +141,7 @@ export default function ManageProductsPage() {
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Allergens</TableHead>
+              <TableHead>Favorites</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -136,6 +167,12 @@ export default function ManageProductsPage() {
                         ) : (
                             'N/A'
                         )}
+                    </div>
+                </TableCell>
+                <TableCell>
+                    <div className="flex items-center gap-1 font-semibold">
+                        <Heart className="h-4 w-4 text-destructive" />
+                        {product.favoriteCount}
                     </div>
                 </TableCell>
                 <TableCell className="text-right">
