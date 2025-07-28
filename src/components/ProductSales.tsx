@@ -20,9 +20,9 @@ import { FavoriteButton } from './FavoriteButton';
 
 const ProductCard = ({ product }: { product: Product }) => {
   return (
-    <Card className="flex flex-col overflow-hidden rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:-translate-y-2">
+    <Card className="flex flex-col rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:-translate-y-2">
       <div className="relative h-64 w-full">
-        <Image src={product.image} alt={product.alt} data-ai-hint={product.hint} fill className="object-cover" />
+        <Image src={product.image} alt={product.alt} data-ai-hint={product.hint} fill className="object-cover rounded-t-lg" />
       </div>
       <CardHeader className="flex-grow">
         <div className="flex justify-between items-start">
@@ -90,7 +90,7 @@ export default function ProductSales() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index} className="flex flex-col overflow-hidden rounded-lg shadow-lg">
+              <Card key={index} className="flex flex-col rounded-lg shadow-lg">
                  <div className="relative h-64 w-full bg-muted animate-pulse" />
                 <CardHeader>
                   <div className="h-6 w-3/4 rounded bg-muted animate-pulse" />
