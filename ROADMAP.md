@@ -1,4 +1,3 @@
-
 # Flourish & Dough - Project Roadmap
 
 This document tracks the features and progress for the Flourish & Dough application.
@@ -60,10 +59,13 @@ This document tracks the features and progress for the Flourish & Dough applicat
 
 ### 3.2. Product & Store Enhancements
 - [x] **Interactive Add to Cart (S):** When an item is added to the cart, the "Add to Basket" button on the product card should transform into a quantity stepper (`- 1 +`).
-- [ ] **Nutritional Information (M):** Add fields for nutritional details (calories, fat, etc.) to products and display them.
+- [x] **Nutritional Information (M):** Add fields for nutritional details (calories, fat, etc.) to products and display them.
 - [ ] **Favorite Items (L):** Allow logged-in users to "favorite" products for easy access later.
 
 ### 3.3. AI-Powered Features
 - [ ] **AI-Powered Product Descriptions (M):** Build a tool for admins to generate product descriptions using AI by providing simple keywords.
 - [ ] **AI Bread Recommender (L):** A tool for customers to get product recommendations based on natural language queries.
 - [ ] **AI Contact Form Analysis (L):** Automatically categorize and prioritize incoming contact messages using AI.
+
+### 3.4. Advanced Features & Automation (Future Vision)
+- [ ] **Ingredient Database & Auto-Nutrition (XL):** Create a separate database for "raw" ingredients with their nutritional data. Allow admins to build products by selecting ingredients and specifying weights, which would automatically generate the final nutritional information and ingredients list.

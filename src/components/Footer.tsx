@@ -1,37 +1,21 @@
-import Link from 'next/link';
-import { Logo } from './Logo';
+'use client';
 
-export function Footer() {
+import { cn } from '@/lib/utils';
+
+export function Footer({ className }: { className?: string }) {
   return (
-    <footer className="border-t border-border/40">
-      <div className="mx-auto max-w-screen-2xl flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0 px-4">
-        <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
-          <Logo className="h-8" />
-          <div className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            <p>© {new Date().getFullYear()} bread mate. All Rights Reserved.</p>
-             <p>
-                Created by{' '}
-                <a
-                    href="https://github.com/albertomtferreira"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium underline underline-offset-4 hover:text-primary"
-                >
-                    Alberto Ferreira
-                </a>
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="font-semibold">v1.5</span>
-          <Link href="https://www.instagram.com/albertotaoinlondon/" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-            Instagram
-          </Link>
-          <Link href="https://www.facebook.com/profile.php?id=61556691611741" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-            Facebook
-          </Link>
-        </div>
-      </div>
-    </footer>
+    <div className={cn("relative font-headline text-foreground", className)}>
+        <svg viewBox="0 0 150 100" className="w-auto h-full">
+            {/* Incomplete square border */}
+            <path d="M40 10 H 140 V 90 H 10 V 25" stroke="currentColor" strokeWidth="4" fill="none" />
+            
+            {/* Brand Name */}
+            <text x="50%" y="45%" dominantBaseline="middle" textAnchor="middle" fontSize="28" fill="currentColor" className="font-headline">bread</text>
+            <text x="50%" y="65%" dominantBaseline="middle" textAnchor="middle" fontSize="28" fill="currentColor" className="font-headline">mate</text>
+            
+            {/* Strapline */}
+            <text x="50%" y="85%" dominantBaseline="middle" textAnchor="middle" fontSize="12" fill="currentColor" className="font-body">homemade breadsticks</text>
+        </svg>
+    </div>
   );
 }
