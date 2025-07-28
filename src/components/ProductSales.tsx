@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,7 +14,7 @@ import {
 import { AddToCartButton } from './AddToCartButton';
 import type { Product } from '@/types';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { AllergenIcon } from './AllergenIcon';
 import { NutritionalDisplay } from './NutritionalDisplay';
 import { ProductDetailSheet } from './ProductDetailDialog';
@@ -80,9 +81,33 @@ const ProductCard = ({ product }: { product: Product }) => {
 
 export default function ProductSales() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [content, setContent] = useState({
+    title: 'Order Our Daily Bread',
+    description: 'Baked fresh every morning, just for you. Discover our selection of artisanal breads.',
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch dynamic content
+    const fetchContent = async () => {
+        try {
+            const contentRef = doc(db, 'siteContent', 'text');
+            const contentSnap = await getDoc(contentRef);
+            if(contentSnap.exists()) {
+                const data = contentSnap.data();
+                setContent({
+                    title: data.productSalesTitle,
+                    description: data.productSalesDescription,
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch product sales content:", error);
+        }
+    };
+    
+    fetchContent();
+
+    // Fetch products
     const productsCollection = collection(db, 'products');
     const q = query(productsCollection, where("isAvailable", "==", true));
     
@@ -103,9 +128,9 @@ export default function ProductSales() {
        <section className="py-16 sm:py-24 bg-background">
         <div className="container mx-auto">
            <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold font-headline text-foreground">Order Our Daily Bread</h1>
+            <h1 className="text-3xl md:text-4xl font-bold font-headline text-foreground">{content.title}</h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Baked fresh every morning, just for you. Discover our selection of artisanal breads.
+              {content.description}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -134,9 +159,9 @@ export default function ProductSales() {
     <section className="py-16 sm:py-24 bg-background">
       <div className="container mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold font-headline text-foreground">Order Our Daily Bread</h1>
+          <h1 className="text-3xl md:text-4xl font-bold font-headline text-foreground">{content.title}</h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Baked fresh every morning, just for you. Discover our selection of artisanal breads.
+            {content.description}
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

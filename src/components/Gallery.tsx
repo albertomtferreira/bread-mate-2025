@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData, doc, getDoc } from 'firebase/firestore';
 
 interface GalleryImage {
   id: string;
@@ -19,9 +20,33 @@ interface GalleryImage {
 
 export default function Gallery() {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [content, setContent] = useState({
+    title: 'From Our Bakery',
+    description: 'A glimpse into our passion for baking and the community we serve.',
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch dynamic content
+     const fetchContent = async () => {
+        try {
+            const contentRef = doc(db, 'siteContent', 'text');
+            const contentSnap = await getDoc(contentRef);
+            if(contentSnap.exists()) {
+                const data = contentSnap.data();
+                setContent({
+                    title: data.galleryTitle,
+                    description: data.galleryDescription,
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch gallery content:", error);
+        }
+    };
+    
+    fetchContent();
+
+    // Fetch images
     const fetchGalleryImages = async () => {
       try {
         const galleryCollection = collection(db, 'gallery');
@@ -46,9 +71,9 @@ export default function Gallery() {
       <section className="py-16 sm:py-24 bg-card">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">From Our Bakery</h2>
+            <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">{content.title}</h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              A glimpse into our passion for baking and the community we serve.
+              {content.description}
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -77,9 +102,9 @@ export default function Gallery() {
     <section className="py-16 sm:py-24 bg-card">
       <div className="container mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">From Our Bakery</h2>
+          <h2 className="text-3xl md:text-4xl font-bold font-headline text-foreground">{content.title}</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            A glimpse into our passion for baking and the community we serve.
+            {content.description}
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

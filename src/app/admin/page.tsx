@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GalleryHorizontalEnd, Image, ShoppingBag, Users, Package, MessageSquare, LineChart, Truck } from "lucide-react";
+import { GalleryHorizontalEnd, Image, ShoppingBag, Users, Package, MessageSquare, LineChart, Truck, FileText } from "lucide-react";
 import Link from "next/link";
 import { useNotifications } from "@/contexts/NotificationProvider";
 
@@ -103,20 +104,25 @@ export default function AdminPage() {
               Manage visual assets and customer communications for your website.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-auto">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-auto">
             <Button asChild>
               <Link href="/admin/carousel" className="flex items-center gap-2">
-                <GalleryHorizontalEnd /> Manage Carousel
+                <GalleryHorizontalEnd /> Carousel
               </Link>
             </Button>
             <Button asChild>
                <Link href="/admin/gallery" className="flex items-center gap-2">
-                <Image /> Manage Gallery
+                <Image /> Gallery
+              </Link>
+            </Button>
+            <Button asChild>
+               <Link href="/admin/content" className="flex items-center gap-2">
+                <FileText /> Site Text
               </Link>
             </Button>
              <Button asChild className="relative">
                <Link href="/admin/contacts" className="flex items-center gap-2">
-                <MessageSquare /> View Messages
+                <MessageSquare /> Messages
                  {newMessageCount > 0 && (
                   <Badge variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center rounded-full animate-pulse">
                     {newMessageCount}
