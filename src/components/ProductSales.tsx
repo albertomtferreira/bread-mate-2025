@@ -17,38 +17,58 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { AllergenIcon } from './AllergenIcon';
 import { NutritionalDisplay } from './NutritionalDisplay';
 import { ProductDetailDialog } from './ProductDetailDialog';
+import { FavoriteButton } from './FavoriteButton';
 
 const ProductCard = ({ product }: { product: Product }) => {
   return (
     <Card className="flex flex-col rounded-lg shadow-lg transition-transform duration-300 ease-in-out hover:-translate-y-2">
-       <ProductDetailDialog product={product}>
+      <ProductDetailDialog product={product}>
         <div className="cursor-pointer">
-            <div className="relative h-64 w-full">
-                <Image src={product.image} alt={product.alt} data-ai-hint={product.hint} fill className="object-cover rounded-t-lg" />
-            </div>
-            <CardHeader className="flex-grow">
-                <CardTitle className="font-headline">{product.name}</CardTitle>
-                <CardDescription className="pt-2">{product.description}</CardDescription>
-            </CardHeader>
+          <div className="relative h-64 w-full">
+            <Image
+              src={product.image}
+              alt={product.alt}
+              data-ai-hint={product.hint}
+              fill
+              className="object-cover rounded-t-lg"
+            />
+          </div>
         </div>
       </ProductDetailDialog>
+      <CardHeader className="flex-grow">
+        <div className="flex justify-between items-start gap-4">
+          <ProductDetailDialog product={product}>
+            <div className="cursor-pointer flex-grow">
+              <CardTitle className="font-headline hover:underline">
+                {product.name}
+              </CardTitle>
+            </div>
+          </ProductDetailDialog>
+          <FavoriteButton product={product} />
+        </div>
+        <CardDescription className="pt-2">{product.description}</CardDescription>
+      </CardHeader>
       <CardContent>
-        {product.allergens && Array.isArray(product.allergens) && product.allergens.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 pb-4">
-            <span className="text-sm font-semibold">Allergens:</span>
-            {product.allergens.map(allergen => (
-              <AllergenIcon key={allergen} allergen={allergen} />
-            ))}
-          </div>
-        )}
+        {product.allergens &&
+          Array.isArray(product.allergens) &&
+          product.allergens.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pb-4">
+              <span className="text-sm font-semibold">Allergens:</span>
+              {product.allergens.map((allergen) => (
+                <AllergenIcon key={allergen} allergen={allergen} />
+              ))}
+            </div>
+          )}
         {product.nutritionalInfo && (
-            <NutritionalDisplay 
-                nutritionalInfo={product.nutritionalInfo} 
-                ingredients={product.ingredients}
-                productName={product.name}
-            />
+          <NutritionalDisplay
+            nutritionalInfo={product.nutritionalInfo}
+            ingredients={product.ingredients}
+            productName={product.name}
+          />
         )}
-        <p className="text-2xl font-bold text-primary mt-4">£{product.price.toFixed(2)}</p>
+        <p className="text-2xl font-bold text-primary mt-4">
+          £{product.price.toFixed(2)}
+        </p>
       </CardContent>
       <CardFooter className="justify-center">
         <AddToCartButton product={product} />
