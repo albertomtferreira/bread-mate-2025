@@ -47,7 +47,6 @@ export function AddToCartButton({ product }: { product: Product }) {
         <Button
           variant="outline"
           size="icon"
-          className="h-10 w-10"
           onClick={() => updateQuantity(product.id, quantity - 1)}
         >
           <Minus />
@@ -56,7 +55,6 @@ export function AddToCartButton({ product }: { product: Product }) {
         <Button
           variant="outline"
           size="icon"
-          className="h-10 w-10"
           onClick={() => updateQuantity(product.id, quantity + 1)}
         >
           <Plus />
