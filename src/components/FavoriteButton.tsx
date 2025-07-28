@@ -10,12 +10,6 @@ import { toggleFavorite } from '@/services/userService';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types';
 import { Button } from './ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface FavoriteButtonProps {
   product: Product;
@@ -65,33 +59,24 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleToggleFavorite}
-            disabled={isSubmitting}
-            className={cn('text-muted-foreground hover:text-destructive', className)}
-            aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Heart
-                className={cn(
-                  'h-5 w-5 transition-all',
-                  isFavorited && 'fill-destructive text-destructive'
-                )}
-              />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleToggleFavorite}
+        disabled={isSubmitting}
+        className={cn('text-muted-foreground hover:text-destructive', className)}
+        aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        {isSubmitting ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <Heart
+            className={cn(
+              'h-5 w-5 transition-all',
+              isFavorited && 'fill-destructive text-destructive'
             )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{isFavorited ? 'Remove from favorites' : 'Add to favorites'}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+          />
+        )}
+      </Button>
   );
 }
