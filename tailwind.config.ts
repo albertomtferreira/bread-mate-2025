@@ -49,6 +49,9 @@ export default {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         'paypal-blue': '#00457C',
+        'amber': {
+          '500': '#f59e0b',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
