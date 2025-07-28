@@ -67,8 +67,3 @@ This document tracks the features and progress for the Flourish & Dough applicat
 - [ ] **AI-Powered Product Descriptions (M):** Build a tool for admins to generate product descriptions using AI by providing simple keywords.
 - [ ] **AI Bread Recommender (L):** A tool for customers to get product recommendations based on natural language queries.
 - [ ] **AI Contact Form Analysis (L):** Automatically categorize and prioritize incoming contact messages using AI.
-
-
-
-
-
