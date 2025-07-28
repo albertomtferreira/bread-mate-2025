@@ -70,5 +70,8 @@ This document tracks the features and progress for the Flourish & Dough applicat
 - [ ] **AI Bread Recommender (L):** A tool for customers to get product recommendations based on natural language queries.
 - [ ] **AI Contact Form Analysis (L):** Automatically categorize and prioritize incoming contact messages using AI.
 
-### 3.4. Advanced Features & Automation (Future Vision)
+### 3.4. Deployment & Infrastructure
+- [ ] **Vercel Deployment (L):** Configure and deploy the application to Vercel for production hosting.
+
+### 3.5. Advanced Features & Automation (Future Vision)
 - [ ] **Ingredient Database & Auto-Nutrition (XL):** Create a separate database for "raw" ingredients with their nutritional data. Allow admins to build products by selecting ingredients and specifying weights, which would automatically generate the final nutritional information and ingredients list.

@@ -5,7 +5,6 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,16 +22,6 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
-const functions = getFunctions(app);
-
-/**
- * Gets a reference to a callable Cloud Function.
- * @param functionName The name of the function to call.
- * @returns A callable function reference.
- */
-const getCloudFunction = (functionName: string) => {
-    return httpsCallable(functions, functionName);
-}
 
 
-export { db, auth, app, storage, getCloudFunction };
+export { db, auth, app, storage };

@@ -1,8 +1,8 @@
 'use client';
 
-import { db } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase';
 import { doc, updateDoc, setDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { getCloudFunction } from '@/lib/firebase';
+
 
 /**
  * Updates a user's details in the Firestore 'users' collection.
@@ -46,8 +46,6 @@ export const toggleFavorite = async (userId: string, productId: string, isFavori
 };
 
 
-const setUserAdminStatusFunction = getCloudFunction('setUserAdminStatus');
-
 /**
  * Sets a user's admin status. This must be called by an authenticated admin user.
  * @param uid The UID of the user to modify.
@@ -55,8 +53,22 @@ const setUserAdminStatusFunction = getCloudFunction('setUserAdminStatus');
  */
 export const setUserAdminStatus = async (uid: string, isAdmin: boolean): Promise<any> => {
     try {
-        const result = await setUserAdminStatusFunction({ uid, isAdmin });
-        return result.data;
+        const token = await auth.currentUser?.getIdToken();
+        const response = await fetch('/api/users/setAdmin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ uid, isAdmin })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to set admin status');
+        }
+        return result;
+
     } catch (error) {
         console.error("Error setting user admin status:", error);
         // Re-throw the error so the calling component can handle it by displaying a toast
