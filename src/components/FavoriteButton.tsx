@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Heart, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -10,12 +10,6 @@ import { toggleFavorite } from '@/services/userService';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types';
 import { Button } from './ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface FavoriteButtonProps {
   product: Product;
@@ -27,14 +21,12 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
 
   const isFavorited = user?.favorites?.includes(product.id) ?? false;
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent any parent link navigation
     e.stopPropagation(); // Stop event bubbling
-    setIsTooltipOpen(false); // Close tooltip on click
 
     if (!user) {
       toast({
@@ -51,47 +43,40 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
       await refreshUser(); // Refresh user data to get latest favorites
       toast({
         title: isFavorited ? 'Removed from Favorites' : 'Added to Favorites',
-        description: `${product.name} has been ${isFavorited ? 'removed from' : 'added to'} your favorites.`,
+        description: `${product.name} has been ${
+          isFavorited ? 'removed from' : 'added to'
+        } your favorites.`,
       });
     } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Update Failed',
-            description: error.message || 'Could not update your favorites.',
-        })
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: error.message || 'Could not update your favorites.',
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <TooltipProvider delayDuration={100}>
-      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleToggleFavorite}
-            disabled={isSubmitting}
-            className={cn("text-muted-foreground hover:text-destructive", className)}
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <Heart
-                className={cn(
-                  'h-5 w-5 transition-all',
-                  isFavorited && 'fill-destructive text-destructive'
-                )}
-              />
-            )}
-            <span className="sr-only">Toggle Favorite</span>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{isFavorited ? 'Remove from favorites' : 'Add to favorites'}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleToggleFavorite}
+      disabled={isSubmitting}
+      className={cn('text-muted-foreground hover:text-destructive', className)}
+      aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+    >
+      {isSubmitting ? (
+        <Loader2 className="h-5 w-5 animate-spin" />
+      ) : (
+        <Heart
+          className={cn(
+            'h-5 w-5 transition-all',
+            isFavorited && 'fill-destructive text-destructive'
+          )}
+        />
+      )}
+    </Button>
   );
 }
