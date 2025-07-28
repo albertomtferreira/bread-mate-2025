@@ -1,10 +1,11 @@
-
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import Image from 'next/image';
+import { db, storage } from '@/lib/firebase';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -15,24 +16,42 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const contentSchema = z.object({
   productSalesTitle: z.string().min(1, "Title is required."),
   productSalesDescription: z.string().min(1, "Description is required."),
   galleryTitle: z.string().min(1, "Title is required."),
   galleryDescription: z.string().min(1, "Description is required."),
+  // Top-line Banner
   bannerEnabled: z.boolean().default(false),
   bannerText: z.string().optional(),
-  bannerLink: z.string().optional(),
+  // Image Banner
+  imageBannerEnabled: z.boolean().default(false),
+  imageBannerAlt: z.string().optional(),
+  imageBannerHint: z.string().optional(),
+  imageBannerImage: z
+    .any()
+    .optional()
+    .refine((files) => !files || files?.length === 0 || files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
+    .refine(
+      (files) => !files || files?.length === 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      ".jpg, .jpeg, .png and .webp files are accepted."
+    ),
 });
 
-export type SiteContent = z.infer<typeof contentSchema>;
+export type SiteContent = z.infer<typeof contentSchema> & {
+    imageBannerSrc?: string;
+};
 
 export default function ManageContentPage() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const form = useForm<SiteContent>({
@@ -44,7 +63,10 @@ export default function ManageContentPage() {
         galleryDescription: '',
         bannerEnabled: false,
         bannerText: '',
-        bannerLink: '',
+        imageBannerEnabled: false,
+        imageBannerImage: undefined,
+        imageBannerAlt: '',
+        imageBannerHint: '',
     }
   });
 
@@ -54,7 +76,11 @@ export default function ManageContentPage() {
       const contentRef = doc(db, 'siteContent', 'text');
       const contentSnap = await getDoc(contentRef);
       if (contentSnap.exists()) {
-        form.reset(contentSnap.data() as SiteContent);
+        const data = contentSnap.data() as SiteContent;
+        form.reset(data);
+        if(data.imageBannerSrc) {
+            setImagePreview(data.imageBannerSrc);
+        }
       }
     } catch (error) {
       console.error("Error fetching site content: ", error);
@@ -72,23 +98,56 @@ export default function ManageContentPage() {
     fetchContent();
   }, [fetchContent]);
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+       // Keep existing image if no new file is selected
+       setImagePreview(form.getValues('imageBannerSrc') || null);
+    }
+  };
+
   const onSubmit = async (data: SiteContent) => {
     setIsSaving(true);
     try {
         const contentRef = doc(db, 'siteContent', 'text');
         
-        // Ensure optional fields are not undefined
+        const newImageFile = data.imageBannerImage?.[0];
+        let newImageUrl = form.getValues('imageBannerSrc');
+
+        if (newImageFile) {
+             const oldImageUrl = form.getValues('imageBannerSrc');
+             if(oldImageUrl) {
+                try {
+                    await deleteObject(ref(storage, oldImageUrl));
+                } catch (e: any) {
+                   if (e.code !== 'storage/object-not-found') console.error("Could not delete old banner image", e);
+                }
+             }
+
+            const imagePath = `siteContent/${Date.now()}-${newImageFile.name}`;
+            const storageRef = ref(storage, imagePath);
+            await uploadBytesResumable(storageRef, newImageFile);
+            newImageUrl = await getDownloadURL(storageRef);
+        }
+
         const dataToSave = {
             ...data,
             bannerText: data.bannerText || '',
-            bannerLink: data.bannerLink || '',
+            imageBannerSrc: newImageUrl || '',
+            imageBannerAlt: data.imageBannerAlt || '',
+            imageBannerHint: data.imageBannerHint || '',
         };
-        
+        // Remove the local file object before saving to Firestore
+        delete (dataToSave as any).imageBannerImage;
+
         await setDoc(contentRef, dataToSave, { merge: true });
         toast({
             title: "Content Saved",
-            description: "Your website's text has been updated."
+            description: "Your website's content has been updated."
         });
+        fetchContent(); // Re-fetch to get the latest state
     } catch (error) {
         console.error("Error saving content: ", error);
         toast({
@@ -117,7 +176,7 @@ export default function ManageContentPage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                         <CardTitle className="font-headline">Manage Website Content</CardTitle>
-                        <CardDescription>Edit the text displayed on various parts of your website.</CardDescription>
+                        <CardDescription>Edit the text and promotional content displayed on your website.</CardDescription>
                     </div>
                      <Button type="submit" disabled={isSaving || loading}>
                         {isSaving && <Loader2 className="mr-2 animate-spin" />}
@@ -132,23 +191,19 @@ export default function ManageContentPage() {
                     </div>
                 ) : (
                     <div className="space-y-8">
-                         {/* Promotional Banner Section */}
+                         {/* Top Line Banner Section */}
                         <div className="space-y-4 p-4 border rounded-lg">
-                            <h3 className="text-lg font-semibold font-headline">Promotional Banner</h3>
+                            <h3 className="text-lg font-semibold font-headline">Top-line Text Banner</h3>
                             <FormField
                                 control={form.control}
                                 name="bannerEnabled"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                                         <div className="space-y-0.5">
-                                            <FormLabel className="text-base">Enable Banner</FormLabel>
-                                            <FormMessage />
+                                            <FormLabel className="text-base">Enable Text Banner</FormLabel>
                                         </div>
                                         <FormControl>
-                                            <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                            />
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -166,17 +221,76 @@ export default function ManageContentPage() {
                                     </FormItem>
                                 )}
                             />
-                            <FormField
+                        </div>
+
+                         {/* Image Banner Section */}
+                        <div className="space-y-4 p-4 border rounded-lg">
+                            <h3 className="text-lg font-semibold font-headline">Homepage Image Banner</h3>
+                             <FormField
                                 control={form.control}
-                                name="bannerLink"
+                                name="imageBannerEnabled"
                                 render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Banner Link (Optional)</FormLabel>
+                                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                                        <div className="space-y-0.5">
+                                            <FormLabel className="text-base">Enable Image Banner</FormLabel>
+                                        </div>
+                                        <FormControl>
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                                />
+                             <FormField
+                                control={form.control}
+                                name="imageBannerImage"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Banner Image</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="e.g., /order" {...field} />
+                                        <Input
+                                            type="file"
+                                            accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                                            disabled={isSaving}
+                                            ref={fileInputRef}
+                                            onChange={(e) => {
+                                                field.onChange(e.target.files);
+                                                handleImageChange(e);
+                                            }}
+                                        />
                                     </FormControl>
                                     <FormMessage />
-                                    </FormItem>
+                                </FormItem>
+                                )}
+                            />
+                            {imagePreview && (
+                            <div className="mt-4 w-full aspect-[16/5] relative">
+                                <Image src={imagePreview} alt="Banner preview" fill className="rounded-md object-cover" />
+                            </div>
+                            )}
+                            <FormField
+                                control={form.control}
+                                name="imageBannerAlt"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Image Alt Text</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="A descriptive caption for the banner image" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="imageBannerHint"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Image AI Hint</FormLabel>
+                                    <FormControl>
+                                    <Input placeholder="One or two keywords for AI" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
                                 )}
                             />
                         </div>
@@ -251,5 +365,3 @@ export default function ManageContentPage() {
     </Form>
   );
 }
-
-    

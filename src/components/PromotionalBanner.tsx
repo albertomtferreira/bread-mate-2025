@@ -1,17 +1,12 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
-import { cn } from '@/lib/utils';
-import { ArrowRight } from 'lucide-react';
 
 interface BannerContent {
     bannerEnabled: boolean;
     bannerText?: string;
-    bannerLink?: string;
 }
 
 export function PromotionalBanner() {
@@ -34,22 +29,11 @@ export function PromotionalBanner() {
         return null;
     }
 
-    const Wrapper = content.bannerLink ? Link : 'div';
-
     return (
         <div className="bg-primary text-primary-foreground">
-             <Wrapper
-                href={content.bannerLink || '#'}
-                className={cn(
-                    "container mx-auto flex h-10 items-center justify-center text-sm font-medium",
-                    content.bannerLink && "hover:bg-primary/90 transition-colors"
-                )}
-            >
+             <div className="container mx-auto flex h-10 items-center justify-center text-sm font-medium">
                 {content.bannerText}
-                {content.bannerLink && <ArrowRight className="ml-2 h-4 w-4" />}
-            </Wrapper>
+            </div>
         </div>
     );
 }
-
-    
