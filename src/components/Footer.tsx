@@ -23,6 +23,7 @@ export function Footer() {
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span className="font-semibold">v1.5</span>
           <Link href="https://www.instagram.com/albertotaoinlondon/" target="_blank" rel="noopener noreferrer" className="hover:text-primary">
             Instagram
           </Link>
