@@ -76,7 +76,15 @@ export default function ManageContentPage() {
     setIsSaving(true);
     try {
         const contentRef = doc(db, 'siteContent', 'text');
-        await setDoc(contentRef, data, { merge: true });
+        
+        // Ensure optional fields are not undefined
+        const dataToSave = {
+            ...data,
+            bannerText: data.bannerText || '',
+            bannerLink: data.bannerLink || '',
+        };
+        
+        await setDoc(contentRef, dataToSave, { merge: true });
         toast({
             title: "Content Saved",
             description: "Your website's text has been updated."
