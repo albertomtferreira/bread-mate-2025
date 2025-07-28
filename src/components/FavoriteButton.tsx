@@ -65,7 +65,7 @@ export function FavoriteButton({ product, className }: FavoriteButtonProps) {
 
   return (
     <TooltipProvider>
-      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
+      <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen} delayDuration={100}>
         <TooltipTrigger asChild>
           <Button
             variant="ghost"
