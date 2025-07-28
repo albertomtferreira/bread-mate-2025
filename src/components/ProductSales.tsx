@@ -16,6 +16,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { AllergenIcon } from './AllergenIcon';
 import { NutritionalDisplay } from './NutritionalDisplay';
+import { FavoriteButton } from './FavoriteButton';
 
 const ProductCard = ({ product }: { product: Product }) => {
   return (
@@ -24,7 +25,10 @@ const ProductCard = ({ product }: { product: Product }) => {
         <Image src={product.image} alt={product.alt} data-ai-hint={product.hint} fill className="object-cover" />
       </div>
       <CardHeader className="flex-grow">
-        <CardTitle className="font-headline">{product.name}</CardTitle>
+        <div className="flex justify-between items-start">
+            <CardTitle className="font-headline">{product.name}</CardTitle>
+            <FavoriteButton product={product} className="-mt-1 -mr-2" />
+        </div>
         <CardDescription className="pt-2">{product.description}</CardDescription>
         
       </CardHeader>

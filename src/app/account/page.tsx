@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthProvider';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,13 +27,14 @@ import {
   Eye,
   MailWarning,
   ExternalLink,
+  Heart,
 } from 'lucide-react';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { UserDetailsForm } from '@/app/signup/details/page';
 import { UpdateAccountDialog } from '@/components/UpdateAccountDialog';
 import { ManageAddressDialog } from '@/components/ManageAddressDialog';
-import type { Order } from '@/types';
+import type { Order, Product } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { OrderDetailsDialog } from '@/components/OrderDetailsDialog';
 import { formatDistanceToNow } from 'date-fns';
@@ -42,6 +45,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { FavoriteButton } from '@/components/FavoriteButton';
 
 
 type UserDetails = UserDetailsForm & {
@@ -49,6 +53,7 @@ type UserDetails = UserDetailsForm & {
   deliveryAddressLine2?: string;
   deliveryCity?: string;
   deliveryPostcode?: string;
+  favorites?: string[];
 };
 
 const AddressDisplay = ({
@@ -94,6 +99,7 @@ export default function AccountPage() {
   const router = useRouter();
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -107,7 +113,19 @@ export default function AccountPage() {
           const userDocRef = doc(db, 'users', user.uid);
           const docSnap = await getDoc(userDocRef);
           if (docSnap.exists()) {
-            setUserDetails(docSnap.data() as UserDetails);
+             const details = docSnap.data() as UserDetails;
+            setUserDetails(details);
+
+             // Fetch favorite products if there are any
+            if (details.favorites && details.favorites.length > 0) {
+                const productsRef = collection(db, 'products');
+                const favQuery = query(productsRef, where(documentId(), 'in', details.favorites));
+                const favSnapshot = await getDocs(favQuery);
+                const favs = favSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+                setFavoriteProducts(favs);
+            } else {
+              setFavoriteProducts([]);
+            }
           }
 
           // Fetch user orders
@@ -117,9 +135,7 @@ export default function AccountPage() {
           
           const userOrders = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
           
-          // Sort orders on the client-side
           userOrders.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
-
           setOrders(userOrders);
 
         } catch (error) {
@@ -247,7 +263,7 @@ export default function AccountPage() {
         )}
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 space-y-8">
             <Card>
                 <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2">
@@ -297,6 +313,36 @@ export default function AccountPage() {
                 </div>
                 </CardContent>
             </Card>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                        <Heart /> My Favorites
+                    </CardTitle>
+                    <CardDescription>
+                        Your saved items for quick access.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {favoriteProducts.length > 0 ? (
+                        <div className="space-y-4">
+                        {favoriteProducts.map(product => (
+                            <div key={product.id} className="flex items-center gap-4">
+                                <Image src={product.image} alt={product.name} width={64} height={64} className="rounded-md object-cover" />
+                                <div className="flex-grow">
+                                    <h4 className="font-semibold">{product.name}</h4>
+                                    <p className="text-sm text-muted-foreground">£{product.price.toFixed(2)}</p>
+                                </div>
+                                <FavoriteButton product={product} />
+                            </div>
+                        ))}
+                        </div>
+                    ) : (
+                         <p className="text-muted-foreground text-center py-8">You haven't favorited any items yet.</p>
+                    )}
+                </CardContent>
+            </Card>
+
             </div>
 
             <div className="space-y-8">
