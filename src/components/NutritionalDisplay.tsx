@@ -59,18 +59,18 @@ const NutrientItem = ({
 }) => (
   <div
     className={cn(
-      'flex-1 text-center border-r border-gray-400 last:border-r-0',
-      color !== 'bg-white' && 'text-white'
+      'flex flex-col flex-1 text-center border-r border-gray-400 last:border-r-0',
+       color !== 'bg-white' && 'text-white'
     )}
   >
-    <div className={cn('py-1 px-2', color)}>
+    <div className={cn('py-1 px-2 flex-grow flex flex-col justify-center', color)}>
       <div className="text-xs font-bold">{title}</div>
       <div className="text-xl font-extrabold -my-1">
         {value}
         <span className="font-bold text-sm">{unit}</span>
       </div>
       {level && (
-        <div className="text-xs bg-white text-black font-bold rounded-full px-2 py-0.5 inline-block my-0.5">
+        <div className="text-xs bg-white text-black font-bold rounded-full px-2 py-0.5 inline-block my-0.5 self-center">
           {level}
         </div>
       )}
@@ -92,8 +92,8 @@ const EnergyItem = ({
   const kJ = Math.round(kcal * 4.184);
 
   return (
-    <div className="flex-1 text-center border-r border-gray-400">
-      <div className="py-1 px-2 bg-white">
+    <div className="flex flex-col flex-1 text-center border-r border-gray-400">
+      <div className="py-1 px-2 bg-white flex-grow flex flex-col justify-center">
         <div className="text-xs font-bold">Energy</div>
         <div className="text-sm font-bold leading-tight">{kJ}kJ</div>
         <div className="text-sm font-bold leading-tight">{Math.round(kcal)}kcal</div>

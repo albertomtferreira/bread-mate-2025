@@ -52,6 +52,12 @@ export default {
         'amber': {
           '500': '#f59e0b',
         },
+        'green': {
+            '600': '#16a34a',
+        },
+        'red': {
+            '600': '#dc2626',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
