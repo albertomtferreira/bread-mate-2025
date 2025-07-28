@@ -5,8 +5,11 @@ import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { VersionHistoryDialog } from './VersionHistoryDialog';
 import { Logo } from './Logo';
+import { versionHistory } from '@/lib/versionHistory';
 
 export function Footer({ className }: { className?: string }) {
+  const latestVersion = versionHistory[0]?.version || 'v1.0';
+
   return (
 <>
 <footer className="border-t border-border/40">
@@ -32,7 +35,7 @@ export function Footer({ className }: { className?: string }) {
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
       <VersionHistoryDialog>
             <Button variant="link" className="text-muted-foreground font-semibold">
-                v1.8
+                {latestVersion}
             </Button>
         </VersionHistoryDialog>
         
