@@ -61,6 +61,9 @@ This document tracks the features and progress for the Flourish & Dough applicat
 - [x] **Interactive Add to Cart (S):** When an item is added to the cart, the "Add to Basket" button on the product card should transform into a quantity stepper (`- 1 +`).
 - [x] **Nutritional Information (M):** Add fields for nutritional details (calories, fat, etc.) to products and display them.
 - [x] **Favorite Items (L):** Allow logged-in users to "favorite" products for easy access later.
+- [ ] **Account Page Layout (S):** Improve the account page layout by moving the Order History section to the bottom for better visibility of user details.
+- [ ] **Admin Product Favorites (M):** Display a count of how many users have favorited each item on the product management page in the admin dashboard.
+- [ ] **Favorites in Analytics (L):** Incorporate product favorite data into the Analytics dashboard to track popular items.
 
 ### 3.3. AI-Powered Features
 - [ ] **AI-Powered Product Descriptions (M):** Build a tool for admins to generate product descriptions using AI by providing simple keywords.
