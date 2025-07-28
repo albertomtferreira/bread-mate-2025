@@ -95,13 +95,33 @@ async function sendNewOrderEmails(order) {
     }
 }
 async function sendStatusUpdateEmail(update) {
-    const { orderId, customerEmail, status } = update;
+    const { orderId, customerEmail, status, trackingDetails } = update;
     let subject = '';
     let htmlBody = '';
     switch (status) {
         case 'Shipped':
             subject = `Your order #${orderId.substring(0, 7)} has been shipped!`;
-            htmlBody = `<p>Great news! Your order is now on its way to you. You can expect it to arrive soon.</p>`;
+            let trackingInfo = '';
+            if ((trackingDetails === null || trackingDetails === void 0 ? void 0 : trackingDetails.trackingProvider) && trackingDetails.trackingUrl && trackingDetails.trackingNumber) {
+                const trackingLink = trackingDetails.trackingUrl.replace('{trackingNumber}', trackingDetails.trackingNumber);
+                trackingInfo = `
+            <p>
+                It was shipped via <strong>${trackingDetails.trackingProvider}</strong>.
+                You can track your package using the link below:
+            </p>
+            <p style="text-align:center; margin: 20px 0;">
+                <a 
+                    href="${trackingLink}"
+                    target="_blank" 
+                    style="background-color: #A66321; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;"
+                >
+                    Track Your Order
+                </a>
+            </p>
+            <p>Your tracking number is: <strong>${trackingDetails.trackingNumber}</strong></p>
+        `;
+            }
+            htmlBody = `<p>Great news! Your order is now on its way to you.</p>${trackingInfo}`;
             break;
         case 'Delivered':
             subject = `Your order #${orderId.substring(0, 7)} has been delivered!`;
