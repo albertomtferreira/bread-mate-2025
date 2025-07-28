@@ -8,6 +8,16 @@ export interface Version {
 
 export const versionHistory: Version[] = [
   {
+    version: 'v1.9',
+    date: '31-07-2025',
+    changes: [
+      'Created a new Content Management section in the admin dashboard.',
+      'Enabled real-time editing of website text (e.g., product and gallery titles).',
+      'Added a controllable top-line promotional text banner.',
+      'Added a controllable homepage promotional image banner.',
+    ],
+  },
+  {
     version: 'v1.8',
     date: '30-07-2025',
     changes: [

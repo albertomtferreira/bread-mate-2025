@@ -42,6 +42,8 @@ This document tracks the features and progress for the Flourish & Dough applicat
 - [x] **Product Management (CRUD):** Full capabilities to create, read, update, and delete products, including images and allergen information.
 - [x] **Carousel Management:** Add, edit, and delete slides for the homepage hero carousel.
 - [x] **Gallery Management:** Add, edit, and delete images in the website gallery.
+- [x] **Dynamic Website Text (M):** Create a Content Management page for admins to edit website text content in real-time.
+- [x] **Promotional Banners (M):** Implement a controllable top-line text banner and a homepage image banner for promotions.
 
 ### 2.3. Analytics & Notifications
 - [x] **Business Analytics:** A dashboard to view sales trends, revenue, and top-selling products by date range.
