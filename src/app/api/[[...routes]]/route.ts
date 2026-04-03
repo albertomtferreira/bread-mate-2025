@@ -116,6 +116,29 @@ async function createOrder(request: NextRequest) {
 
         const orderData = { ...orderPayload, deliveryAddress, status: 'Processing', createdAt: FieldValue.serverTimestamp(), userId: userId };
         const docRef = await db.collection('orders').add(orderData);
+
+        // --- Update Customer Insights ---
+        if (userId) {
+            const userRef = db.collection('users').doc(userId);
+            const userDoc = await userRef.get();
+            
+            const metricsUpdate: any = {
+                lastOrderAt: FieldValue.serverTimestamp(),
+                orderCount: FieldValue.increment(1),
+                totalSpent: FieldValue.increment(orderPayload.total || 0),
+            };
+
+            if (!userDoc.exists || !userDoc.data()?.firstOrderAt) {
+                metricsUpdate.firstOrderAt = FieldValue.serverTimestamp();
+            }
+
+            try {
+                await userRef.set(metricsUpdate, { merge: true });
+            } catch (err) {
+                console.error('Error updating customer metrics:', err);
+                // We don't fail the entire order if metrics update fails
+            }
+        }
         
         if (subscribeToNewsletter && orderPayload.customerEmail) {
             await db.collection('newsletter').doc(orderPayload.customerEmail).set({

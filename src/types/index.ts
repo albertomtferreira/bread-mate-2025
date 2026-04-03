@@ -1,6 +1,18 @@
-'use client';
-
 import { Timestamp } from 'firebase/firestore';
+
+export interface User {
+  uid: string;
+  email: string;
+  displayName?: string;
+  favorites?: string[];
+  isAdmin?: boolean;
+  // Customer Insights fields
+  firstOrderAt?: Timestamp;
+  lastOrderAt?: Timestamp;
+  orderCount?: number;
+  totalSpent?: number;
+}
+
 
 export interface NutritionalInfo {
   energy?: number;
