@@ -1,7 +1,7 @@
 'use client';
 
 import { db, auth } from '@/lib/firebase';
-import { doc, updateDoc, setDoc, getDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 
 
 /**
@@ -30,13 +30,22 @@ export const updateUserDetails = async (uid: string, details: any): Promise<void
 export const toggleFavorite = async (userId: string, productId: string, isFavorited: boolean): Promise<void> => {
     const userRef = doc(db, 'users', userId);
     try {
+        const productRef = doc(db, 'products', productId);
         if (isFavorited) {
+            // Remove from user favorites and decrement product count
             await updateDoc(userRef, {
                 favorites: arrayRemove(productId)
             });
+            await updateDoc(productRef, {
+                favoriteCount: increment(-1)
+            });
         } else {
+            // Add to user favorites and increment product count
             await updateDoc(userRef, {
                 favorites: arrayUnion(productId)
+            });
+            await updateDoc(productRef, {
+                favoriteCount: increment(1)
             });
         }
     } catch (error) {

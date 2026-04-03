@@ -1,18 +1,19 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, LineChart, Users, ShoppingCart, PoundSterling, Package, X } from 'lucide-react';
+import { ArrowLeft, LineChart, ShoppingCart, PoundSterling, Package, X, Heart, RefreshCcw } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { format, subDays, startOfDay, endOfDay, addDays } from 'date-fns';
-import type { Order, CartItem } from '@/types';
+import type { Order } from '@/types';
 import { DateRangePicker } from '@/components/ui/datepicker';
 import type { DateRange } from 'react-day-picker';
+import Link from 'next/link';
+import { syncAllFavoriteCounts } from '@/lib/syncFavorites';
+import { useToast } from '@/hooks/use-toast';
 
 interface AnalyticsData {
   totalRevenue: number;
@@ -20,16 +21,41 @@ interface AnalyticsData {
   avgOrderValue: number;
   salesByDay: { date: string; sales: number }[];
   topProducts: { name: string; quantity: number }[];
+  totalFavorites: number;
+  topFavoritedProducts: { name: string; count: number }[];
 }
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const { toast } = useToast();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29),
     to: new Date(),
   });
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+        await syncAllFavoriteCounts();
+        toast({
+            title: "Sync Complete",
+            description: "Favorite counts have been successfully recalculated."
+        });
+        // Refresh data after sync
+        window.location.reload(); 
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Sync Failed",
+            description: "There was an error while syncing counts."
+        });
+    } finally {
+        setSyncing(false);
+    }
+  }
 
   useEffect(() => {
     const fetchAnalyticsData = async () => {
@@ -117,12 +143,32 @@ export default function AnalyticsPage() {
           .sort((a, b) => b.quantity - a.quantity)
           .slice(0, 5); 
 
+        // --- Process Favorite Tracking (Separate query for all products) ---
+        const productsCollection = collection(db, 'products');
+        const prodSnapshot = await getDocs(productsCollection);
+        let totalFavorites = 0;
+        const favoritesList: { name: string; count: number }[] = [];
+
+        prodSnapshot.docs.forEach(doc => {
+            const prodData = doc.data();
+            // Safeguard against negative numbers (Math.max(0, ...))
+            const count = Math.max(0, prodData.favoriteCount || 0);
+            totalFavorites += count;
+            favoritesList.push({ name: prodData.name, count: count });
+        });
+
+        const topFavoritedProducts = favoritesList
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+
         setData({
           totalRevenue,
           totalOrders,
           avgOrderValue,
           salesByDay,
           topProducts,
+          totalFavorites,
+          topFavoritedProducts
         });
 
       } catch (error) {
@@ -151,7 +197,19 @@ export default function AnalyticsPage() {
             Back to Dashboard
           </Link>
         </Button>
-        <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+        <div className="flex flex-wrap items-center gap-4">
+            <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSync} 
+                disabled={syncing}
+                className="gap-2"
+            >
+                <RefreshCcw className={syncing ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+                {syncing ? "Syncing..." : "Sync Favorites"}
+            </Button>
+            <DateRangePicker date={dateRange} onDateChange={setDateRange} />
+        </div>
       </div>
       <div>
         <h1 className="text-3xl font-headline font-bold flex items-center gap-2">
@@ -176,7 +234,7 @@ export default function AnalyticsPage() {
         <div className="flex justify-center items-center h-96">
             <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
-      ) : !data || data.totalOrders === 0 ? (
+      ) : !data || (data.totalOrders === 0 && !selectedProduct) ? (
         <Card className="flex flex-col items-center justify-center p-12 text-center">
             <CardTitle>No Data Available</CardTitle>
             <CardDescription className="mt-2">
@@ -188,7 +246,7 @@ export default function AnalyticsPage() {
         </Card>
       ) : (
       <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{selectedProduct ? `Revenue from ${selectedProduct}`: 'Total Revenue'}</CardTitle>
@@ -209,17 +267,28 @@ export default function AnalyticsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+            <CardTitle className="text-sm font-medium">Avg Order Value</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">£{data.avgOrderValue.toFixed(2)}</div>
           </CardContent>
         </Card>
+        {!selectedProduct && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Favorites</CardTitle>
+                <Heart className="h-4 w-4 text-destructive" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{data.totalFavorites}</div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-7">
-        <Card className={selectedProduct ? 'lg:col-span-7' : 'lg:col-span-4'}>
+        <Card className={selectedProduct ? 'lg:col-span-10' : 'lg:col-span-4'}>
             <CardHeader>
                 <CardTitle>Sales Over Time</CardTitle>
             </CardHeader>
@@ -244,27 +313,38 @@ export default function AnalyticsPage() {
         {!selectedProduct && (
             <Card className="lg:col-span-3">
                 <CardHeader>
-                    <CardTitle>Top Selling Products</CardTitle>
-                    <CardDescription>Top 5 products by quantity sold in period.</CardDescription>
+                    <CardTitle>Top Selling vs Favorited</CardTitle>
+                    <CardDescription>Visual comparisons of top items.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={data.topProducts} layout="vertical">
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" hide />
-                            <YAxis dataKey="name" type="category" width={150} tickLine={false} axisLine={false} fontSize={12} />
-                            <Tooltip formatter={(value: number) => `${value} units`} />
-                            <Legend />
-                            <Bar dataKey="quantity" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} cursor="pointer" onClick={(data) => handleBarClick(data)} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <CardContent className="space-y-8">
+                    <div className="h-[180px]">
+                        <p className="text-xs font-semibold mb-2">Top Sales (Units)</p>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={data.topProducts} layout="vertical">
+                                <YAxis dataKey="name" type="category" width={100} fontSize={10} tickLine={false} axisLine={false} />
+                                <XAxis type="number" hide />
+                                <Tooltip />
+                                <Bar dataKey="quantity" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} cursor="pointer" onClick={(data) => handleBarClick(data)} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="h-[180px]">
+                        <p className="text-xs font-semibold mb-2">Top Favorites</p>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={data.topFavoritedProducts} layout="vertical">
+                                <YAxis dataKey="name" type="category" width={100} fontSize={10} tickLine={false} axisLine={false} />
+                                <XAxis type="number" hide />
+                                <Tooltip />
+                                <Bar dataKey="count" fill="hsl(var(--destructive))" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </CardContent>
             </Card>
         )}
       </div>
       </>
       )}
-
     </div>
   );
 }

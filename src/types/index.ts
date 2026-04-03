@@ -25,6 +25,7 @@ export interface Product {
   isAvailable: boolean;
   ingredients?: string;
   nutritionalInfo?: NutritionalInfo;
+  favoriteCount?: number;
 }
 
 export interface CartItem extends Product {
