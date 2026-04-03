@@ -97,7 +97,7 @@ export default function SignUpPage() {
         <div className="p-8">
             <CardHeader className="text-center md:text-left p-0">
                 <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
-                <CardDescription>Join bread mate to start your order.</CardDescription>
+                <CardDescription>Join BreadMate to start your order.</CardDescription>
             </CardHeader>
             <CardContent className="p-0 mt-6">
             <Form {...form}>

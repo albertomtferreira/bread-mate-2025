@@ -31,7 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { updateUserDetails } from '@/services/userService';
 
 // This is the same schema as in UpdateAddressDialog
-const addressSchema = z.object({
+export const addressSchema = z.object({
   addressLine1: z.string().min(1, 'Billing address is required'),
   addressLine2: z.string().optional(),
   city: z.string().min(1, 'Billing city is required'),
@@ -57,7 +57,7 @@ const addressSchema = z.object({
 });
 
 
-type UserDetails = z.infer<typeof addressSchema>;
+export type UserDetails = z.infer<typeof addressSchema>;
 
 interface ManageAddressDialogProps {
   currentUserDetails: UserDetails | null;
@@ -171,7 +171,7 @@ export function ManageAddressDialog({ currentUserDetails, onAddressUpdate }: Man
                <FormField control={form.control} name="city" render={({ field }) => (
                   <FormItem>
                     <FormLabel>City</FormLabel>
-                    <FormControl><Input placeholder="Doughville" {...field} /></FormControl>
+                    <FormControl><Input placeholder="Bread City" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

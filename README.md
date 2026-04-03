@@ -1,6 +1,6 @@
-# Flourish & Dough - Artisan Bread E-commerce Store
+# BreadMate - Artisan Bread E-commerce Store
 
-Flourish & Dough is a full-featured, production-ready e-commerce web application built with a modern, scalable technology stack. It provides a seamless shopping experience for customers and a comprehensive dashboard for administrators to manage products, orders, content, and more.
+BreadMate is a full-featured, production-ready e-commerce web application built with a modern, scalable technology stack. It provides a seamless shopping experience for customers and a comprehensive dashboard for administrators to manage products, orders, content, and more.
 
 ## Key Features
 
@@ -51,7 +51,7 @@ Flourish & Dough is a full-featured, production-ready e-commerce web application
 ### 1. Clone the Repository
 ```bash
 git clone <repository-url>
-cd flourish-and-dough
+cd bread-mate-2025
 ```
 
 ### 2. Install Dependencies

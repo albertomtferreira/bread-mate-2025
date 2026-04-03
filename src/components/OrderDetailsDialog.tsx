@@ -226,7 +226,7 @@ export function OrderDetailsDialog({ order, children }: OrderDetailsDialogProps)
                     <div>
                         <p className="font-semibold">Have feedback?</p>
                         <p className="text-sm text-muted-foreground">Scan the QR code to visit our contact page.</p>
-                        <p className="text-xs text-muted-foreground mt-2">bread mate | {window.location.host}</p>
+                        <p className="text-xs text-muted-foreground mt-2">BreadMate | {window.location.host}</p>
                     </div>
                 </div>
             </div>

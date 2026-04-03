@@ -1,4 +1,4 @@
-# **App Name**: Flourish & Dough
+# **App Name**: BreadMate
 
 ## Core Features:
 

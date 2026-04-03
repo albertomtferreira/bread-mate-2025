@@ -9,8 +9,8 @@ import { Providers } from '@/components/Providers';
 import { PromotionalBanner } from '@/components/PromotionalBanner';
 
 export const metadata: Metadata = {
-  title: 'bread mate',
-  description: 'Homemade breadsticks, delivered fresh from bread mate.',
+  title: 'BreadMate',
+  description: 'Homemade breadsticks, delivered fresh from BreadMate.',
 };
 
 export default function RootLayout({

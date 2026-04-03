@@ -1,6 +1,6 @@
-# Flourish & Dough - Project Roadmap
+# BreadMate - Project Roadmap
 
-This document tracks the features and progress for the Flourish & Dough application.
+This document tracks the features and progress for the BreadMate application.
 
 ---
 

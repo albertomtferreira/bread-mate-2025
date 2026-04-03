@@ -24,7 +24,7 @@ import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
-import { ManageAddressDialog } from '@/components/ManageAddressDialog';
+import { ManageAddressDialog, type UserDetails as AddressDetails } from '@/components/ManageAddressDialog';
 import { PayPalDialog } from '@/components/PayPalDialog';
 import { createOrder } from '@/services/orderService';
 import { useToast } from '@/hooks/use-toast';
@@ -139,8 +139,18 @@ export default function CheckoutDetailsPage() {
     fetchUserDetails();
   }, [user, cartItems, router, completedOrderId]);
   
-  const handleAddressUpdate = (newDetails: UserDetails) => {
-    setUserDetails(prev => ({...prev, ...newDetails}));
+  const handleAddressUpdate = (newDetails: Partial<AddressDetails>) => {
+    setUserDetails(prev => {
+        if (!prev) return null;
+        return {
+            ...prev,
+            ...newDetails,
+            deliveryAddressLine1: newDetails.deliveryAddressLine1,
+            deliveryAddressLine2: newDetails.deliveryAddressLine2,
+            deliveryCity: newDetails.deliveryCity,
+            deliveryPostcode: newDetails.deliveryPostcode,
+        } as UserDetails;
+    });
   }
   
   const billingAddress = {
@@ -182,9 +192,9 @@ export default function CheckoutDetailsPage() {
             total: total,
             deliveryAddress: {
                 addressLine1: finalAddress.addressLine1,
-                addressLine2: finalAddress.addressLine2,
-                city: finalAddress.city,
-                postcode: finalAddress.postcode
+                addressLine2: finalAddress.addressLine2 || '',
+                city: finalAddress.city || '',
+                postcode: finalAddress.postcode || ''
             },
             subscribeToNewsletter: userDetails?.subscribeToNewsletter || false,
         };
@@ -204,14 +214,14 @@ export default function CheckoutDetailsPage() {
             customerEmail: guestData.customerEmail,
             items: cartItems,
             total: total,
-            addressLine1: guestData.addressLine1,
-            addressLine2: guestData.addressLine2,
-            city: guestData.city,
-            postcode: guestData.postcode,
-            deliveryAddressLine1: guestData.deliveryAddressLine1,
-            deliveryAddressLine2: guestData.deliveryAddressLine2,
-            deliveryCity: guestData.deliveryCity,
-            deliveryPostcode: guestData.deliveryPostcode,
+            addressLine1: guestData.addressLine1 || '',
+            addressLine2: guestData.addressLine2 || '',
+            city: guestData.city || '',
+            postcode: guestData.postcode || '',
+            deliveryAddressLine1: guestData.deliveryAddressLine1 || '',
+            deliveryAddressLine2: guestData.deliveryAddressLine2 || '',
+            deliveryCity: guestData.deliveryCity || '',
+            deliveryPostcode: guestData.deliveryPostcode || '',
             subscribeToNewsletter: guestData.subscribeToNewsletter
         }
     }
@@ -264,7 +274,17 @@ export default function CheckoutDetailsPage() {
                     <CardTitle className="font-headline">{user ? "Delivery Address" : "Your Details"}</CardTitle>
                     {user && (
                         <ManageAddressDialog
-                            currentUserDetails={userDetails}
+                            currentUserDetails={userDetails ? {
+                                addressLine1: userDetails.addressLine1,
+                                addressLine2: userDetails.addressLine2,
+                                city: userDetails.city,
+                                postcode: userDetails.postcode,
+                                useDifferentDeliveryAddress: !!userDetails.deliveryAddressLine1,
+                                deliveryAddressLine1: userDetails.deliveryAddressLine1,
+                                deliveryAddressLine2: userDetails.deliveryAddressLine2,
+                                deliveryCity: userDetails.deliveryCity,
+                                deliveryPostcode: userDetails.deliveryPostcode,
+                            } : null}
                             onAddressUpdate={handleAddressUpdate}
                         />
                     )}
@@ -336,7 +356,7 @@ export default function CheckoutDetailsPage() {
                                 <FormField control={guestForm.control} name="city" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>City</FormLabel>
-                                        <FormControl><Input placeholder="Doughville" {...field} /></FormControl>
+                                        <FormControl><Input placeholder="Bread City" {...field} /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
@@ -448,7 +468,7 @@ export default function CheckoutDetailsPage() {
                         <PayPalDialog 
                             total={total}
                             onConfirm={handlePaymentConfirmation}
-                            disabled={(user && !billingAddress.addressLine1) || (user && !deliveryAddress.addressLine1 && selectedAddress === 'delivery')}
+                            disabled={(user && !billingAddress.addressLine1) || (user && !deliveryAddress.addressLine1 && selectedAddress === 'delivery') || false}
                         />
                          <Button variant="link" className="w-full mt-2" onClick={() => router.push('/checkout')}>
                             Back to Basket

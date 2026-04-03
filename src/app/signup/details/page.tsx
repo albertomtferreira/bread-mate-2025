@@ -151,7 +151,7 @@ export default function SignUpDetailsPage() {
                     <FormItem>
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                        <Input placeholder="Doughville" {...field} />
+                        <Input placeholder="Bread City" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

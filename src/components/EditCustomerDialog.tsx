@@ -218,7 +218,7 @@ export function EditCustomerDialog({ customer, onCustomerUpdate }: EditCustomerD
                <FormField control={form.control} name="city" render={({ field }) => (
                   <FormItem>
                     <FormLabel>City</FormLabel>
-                    <FormControl><Input placeholder="Doughville" {...field} /></FormControl>
+                    <FormControl><Input placeholder="Bread City" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

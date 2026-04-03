@@ -17,7 +17,7 @@ export function Footer({ className }: { className?: string }) {
       <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
         <Logo className="h-8" />
         <div className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-          <p>© {new Date().getFullYear()} bread mate. All Rights Reserved.</p>
+          <p>© {new Date().getFullYear()} BreadMate. All Rights Reserved.</p>
            <p>
               Created by{' '}
               <a

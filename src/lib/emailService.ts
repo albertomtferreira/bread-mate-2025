@@ -61,7 +61,7 @@ async function sendEmail(mailOptions: { to: string; subject: string; text: strin
 
         sendSmtpEmail.subject = mailOptions.subject;
         sendSmtpEmail.htmlContent = mailOptions.html;
-        sendSmtpEmail.sender = { name: 'bread mate', email: FROM_EMAIL };
+        sendSmtpEmail.sender = { name: 'BreadMate', email: FROM_EMAIL };
         sendSmtpEmail.to = [{ email: mailOptions.to }];
         sendSmtpEmail.textContent = mailOptions.text;
 
@@ -77,7 +77,7 @@ export async function sendNewOrderEmails(order: OrderData) {
   const customerMail = {
     to: order.customerEmail,
     subject: `Your order confirmation #${order.orderId.substring(0, 7)}`,
-    text: `Hi ${order.customerName},\n\nThank you for your order! We've received it and will start preparing it shortly.\n\nOrder ID: ${order.orderId}\nTotal: £${order.total.toFixed(2)}\n\nWe'll notify you when it's on its way.\n\nThanks,\nThe bread mate Team`,
+    text: `Hi ${order.customerName},\n\nThank you for your order! We've received it and will start preparing it shortly.\n\nOrder ID: ${order.orderId}\nTotal: £${order.total.toFixed(2)}\n\nWe'll notify you when it's on its way.\n\nThanks,\nThe BreadMate Team`,
     html: `
       <h2>Thank you for your order!</h2>
       <p>Hi ${order.customerName},</p>
@@ -90,7 +90,7 @@ export async function sendNewOrderEmails(order: OrderData) {
       </ul>
       <hr>
       <p>We'll notify you when your order is on its way.</p>
-      <p>Thanks,<br>The bread mate Team</p>
+      <p>Thanks,<br>The BreadMate Team</p>
     `,
   };
   await sendEmail(customerMail);
@@ -111,7 +111,6 @@ export async function sendNewOrderEmails(order: OrderData) {
         <ul>
           ${order.items.map(item => `<li>${item.quantity}x ${item.name}</li>`).join('')}
         </ul>
-        <hr>
         <p>Please check the admin dashboard to view and process the order.</p>
       `,
     };
@@ -167,7 +166,7 @@ export async function sendStatusUpdateEmail(update: StatusUpdateData) {
     to: customerEmail,
     subject: subject,
     text: htmlBody.replace(/<[^>]+>/g, ''), // Simple text version
-    html: `<h2>Order Update</h2><p>The status of your order #${orderId.substring(0, 7)} has been updated to: <strong>${status}</strong>.</p>${htmlBody}<p>Thanks,<br>The bread mate Team</p>`,
+    html: `<h2>Order Update</h2><p>The status of your order #${orderId.substring(0, 7)} has been updated to: <strong>${status}</strong>.</p>${htmlBody}<p>Thanks,<br>The BreadMate Team</p>`,
   };
 
   await sendEmail(mail);

@@ -59,8 +59,8 @@ export function PayPalDialog({ total, onConfirm, disabled = false }: PayPalDialo
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="items-center text-center">
             <PayPalIcon />
-          <DialogTitle className="text-2xl font-bold">bread mate</DialogTitle>
-          <DialogDescription>Paying bread mate</DialogDescription>
+          <DialogTitle className="text-2xl font-bold">BreadMate</DialogTitle>
+          <DialogDescription>Paying BreadMate</DialogDescription>
           <p className="text-4xl font-bold tracking-tight">£{total.toFixed(2)}</p>
         </DialogHeader>
         <div className="text-center text-sm text-muted-foreground">
