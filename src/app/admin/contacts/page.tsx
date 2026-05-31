@@ -19,7 +19,9 @@ export interface ContactMessage {
     email: string;
     message: string;
     createdAt: Timestamp;
-    status?: 'new' | 'read' | 'archived'; // Status is now optional
+    status?: 'new' | 'read' | 'archived' | 'replied';
+    replyBody?: string;
+    repliedAt?: Timestamp;
 }
 
 export default function ManageContactsPage() {
@@ -156,6 +158,7 @@ export default function ManageContactsPage() {
                                     <TableCell>
                                         { (message.status === 'new' || !message.status) && <Badge variant="default">New</Badge>}
                                         { message.status === 'read' && <Badge variant="secondary">Read</Badge>}
+                                        { message.status === 'replied' && <Badge variant="secondary" className="bg-green-100 text-green-800">Replied</Badge>}
                                         { message.status === 'archived' && <Badge variant="outline">Archived</Badge>}
                                     </TableCell>
                                     <TableCell className="text-right">

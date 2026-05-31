@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { sendNewOrderEmails, sendStatusUpdateEmail, sendNewContactEmailToAdmin } from '@/lib/emailService';
+import { sendNewOrderEmails, sendStatusUpdateEmail, sendNewContactEmailToAdmin, sendContactReplyEmail } from '@/lib/emailService';
 
 // Initialize Firebase Admin SDK
 // This ensures we have a single instance of the Firebase app.
@@ -42,6 +42,8 @@ async function handlePost(request: NextRequest) {
     switch (path) {
         case 'contact':
             return handleContactForm(request);
+        case 'contact/reply':
+            return handleContactReply(request);
         case 'orders':
             return createOrder(request);
         case 'orders/updateStatus':
@@ -219,3 +221,46 @@ async function setUserAdminStatus(request: NextRequest) {
         return new NextResponse(JSON.stringify({ message: error.message || 'Server error' }), { status: 500 });
     }
 }
+
+async function handleContactReply(request: NextRequest) {
+    const adminUser = await verifyAdmin(request);
+    if (!adminUser) {
+        return new NextResponse('Unauthorized', { status: 401 });
+    }
+    try {
+        const { contactId, replyMessage } = await request.json();
+
+        if (!contactId || !replyMessage) {
+            return new NextResponse(JSON.stringify({ message: 'Missing contact ID or reply message' }), { status: 400 });
+        }
+
+        const contactRef = db.collection('contacts').doc(contactId);
+        const contactDoc = await contactRef.get();
+
+        if (!contactDoc.exists) {
+            return new NextResponse(JSON.stringify({ message: 'Contact message not found' }), { status: 404 });
+        }
+
+        const contactData = contactDoc.data();
+        if (!contactData) throw new Error('Could not read contact data');
+
+        await sendContactReplyEmail({
+            customerEmail: contactData.email,
+            customerName: contactData.name,
+            originalMessage: contactData.message,
+            replyMessage: replyMessage
+        });
+
+        await contactRef.update({ 
+            status: 'replied',
+            replyBody: replyMessage,
+            repliedAt: FieldValue.serverTimestamp()
+        });
+
+        return NextResponse.json({ success: true, message: 'Reply sent successfully' });
+
+    } catch (error: any) {
+        console.error('Error in handleContactReply:', error);
+        return new NextResponse(JSON.stringify({ message: error.message || 'Server error' }), { status: 500 });
+    }
+}

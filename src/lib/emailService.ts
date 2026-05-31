@@ -38,8 +38,17 @@ interface ContactData {
   message: string;
 }
 
+interface ContactReplyData {
+  customerEmail: string;
+  customerName: string;
+  originalMessage: string;
+  replyMessage: string;
+}
+
 /**
  * Sends an email using the Brevo (Sendinblue) API.
+
+
  */
 async function sendEmail(mailOptions: { to: string; subject: string; text: string; html: string; }) {
     if (!BREVO_KEY) {
@@ -197,4 +206,30 @@ export async function sendNewContactEmailToAdmin(contact: ContactData) {
     `,
   };
   await sendEmail(adminMail);
+}
+
+export async function sendContactReplyEmail(reply: ContactReplyData) {
+  const { customerEmail, customerName, originalMessage, replyMessage } = reply;
+
+  const mail = {
+    to: customerEmail,
+    subject: `Re: Your message to BreadMate`,
+    text: `${replyMessage}\n\n---\nOriginal Message:\n${originalMessage}`,
+    html: `
+      <div style="font-family: sans-serif; color: #333;">
+        <p>Hi ${customerName},</p>
+        <p>${replyMessage.replace(/\n/g, '<br>')}</p>
+        <br>
+        <hr style="border: none; border-top: 1px solid #eee;">
+        <p style="color: #666; font-size: 0.9em;"><strong>Original Message:</strong></p>
+        <blockquote style="border-left: 2px solid #ccc; padding-left: 1rem; margin-left: 0; color: #666; font-style: italic;">
+          ${originalMessage.replace(/\n/g, '<br>')}
+        </blockquote>
+        <br>
+        <p>Best regards,<br>The BreadMate Team</p>
+      </div>
+    `,
+  };
+
+  await sendEmail(mail);
 }
